@@ -16,3 +16,5 @@ import android.widget.*;
 import java.io.*;
 import java.util.*;
 
+public class MainActivity {
+}
