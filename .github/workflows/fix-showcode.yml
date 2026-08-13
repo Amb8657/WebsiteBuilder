@@ -1,4 +1,5 @@
 name: Fix missing showCode
+# One-time repair workflow; source patch is committed separately.
 on:
   workflow_dispatch:
   push:
