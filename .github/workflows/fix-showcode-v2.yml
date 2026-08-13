@@ -1,9 +1,9 @@
 name: Fix showCode v2
 on:
+  workflow_dispatch:
   push:
     paths:
       - '.github/workflows/fix-showcode-v2.yml'
-  workflow_dispatch:
 permissions:
   contents: write
 jobs:
@@ -11,20 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Repair malformed Java source
-        shell: python
+      - name: Repair literal backslash-n sequences
+        shell: bash
         run: |
-          from pathlib import Path
-          p = Path('app/src/main/java/com/amb8657/websitebuilder/MainActivity.java')
-          s = p.read_text()
-          # Broken commits contain a backslash followed by a real newline.
-          # Java string literals need the two-character escape sequence \\n instead.
-          repaired = s.replace(chr(92) + chr(10), chr(92) + 'n')
-          if repaired != s:
-              p.write_text(repaired)
-              print('Repaired malformed backslash-newline sequences')
-          else:
-              print('No malformed backslash-newline sequences found')
+          set -e
+          FILE='app/src/main/java/com/amb8657/websitebuilder/MainActivity.java'
+          perl -0pi -e 's/\\n/\n/g' "$FILE"
+          if grep -qF '\\n' "$FILE"; then
+            echo 'ERROR: literal backslash-n sequences remain'
+            exit 1
+          fi
+          git diff -- "$FILE"
       - name: Commit repaired source
         shell: bash
         run: |
@@ -32,5 +29,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add app/src/main/java/com/amb8657/websitebuilder/MainActivity.java
           if git diff --cached --quiet; then echo 'No source change'; exit 0; fi
-          git commit -m 'Repair malformed Java escape sequences'
+          git commit -m 'Repair malformed Java newline sequences'
           git push
