@@ -1,0 +1,36 @@
+name: Fix missing showCode
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/fix-showcode.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add minimal showCode implementation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app/src/main/java/com/amb8657/websitebuilder/MainActivity.java')
+          s = p.read_text()
+          if 'void showCode()' in s:
+              print('showCode already present; nothing to do')
+              raise SystemExit(0)
+          method = r'''\n void showCode(){\n  LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);box.setPadding(dp(16),dp(10),dp(16),dp(8));\n  TextView title=tv("Generated HTML for the current draft",13,TEXT);box.addView(title,lp(-1,40));\n  EditText code=new EditText(this);code.setText(pageHtml(pages.get(current)));code.setTextColor(TEXT);code.setTextSize(11);code.setGravity(Gravity.TOP);code.setBackground(shape(CHROME,8));box.addView(code,new LinearLayout.LayoutParams(-1,0,1));\n  LinearLayout row=new LinearLayout(this);Button copy=btn("Copy HTML"),close=btn("Close");row.addView(copy,weight(1,44));row.addView(close,weight(1,44));box.addView(row);\n  Dialog d=new Dialog(this);d.setContentView(box);copy.setOnClickListener(v->{((android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("HTML",code.getText()));Toast.makeText(this,"HTML copied",Toast.LENGTH_SHORT).show();});close.setOnClickListener(v->d.dismiss());d.show();\n  Window w=d.getWindow();if(w!=null){w.setBackgroundDrawable(shape(SOFT,16));w.setLayout(-1,(int)(getResources().getDisplayMetrics().heightPixels*.8));}\n }\n'''
+          pos = s.rfind('\n}')
+          if pos < 0:
+              raise SystemExit('Could not find MainActivity closing brace')
+          p.write_text(s[:pos] + method + s[pos:])
+          PY
+      - name: Commit fix
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/src/main/java/com/amb8657/websitebuilder/MainActivity.java
+          if git diff --cached --quiet; then echo 'No changes'; else git commit -m 'Fix missing showCode method' && git push; fi
