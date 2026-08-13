@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application android:theme="@style/AppTheme" android:label="MAHA Website Builder" android:icon="@drawable/ic_maha" android:roundIcon="@drawable/ic_maha" android:allowBackup="true" android:supportsRtl="true">
+    <application android:theme="@style/AppTheme" android:label="Website Builder" android:icon="@drawable/ic_maha" android:roundIcon="@drawable/ic_maha" android:allowBackup="true" android:supportsRtl="true">
         <activity android:name=".MainActivity" android:screenOrientation="portrait" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
