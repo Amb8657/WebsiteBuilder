@@ -28,3 +28,4 @@ jobs:
         with:
           name: WebsiteBuilder-final-apk
           path: app/build/outputs/apk/release/app-release.apk
+# Force rebuild after the source repair commit.
