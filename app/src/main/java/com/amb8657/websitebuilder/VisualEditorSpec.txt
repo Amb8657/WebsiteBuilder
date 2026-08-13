@@ -1,0 +1,13 @@
+VISUAL EDITOR REQUIREMENTS
+1. App opens Project Dashboard, not directly into a project.
+2. New Project creates a named project with Home page.
+3. Canvas is visual and supports selecting, moving/reordering, and resizing elements.
+4. Every element has properties accessible without code.
+5. Button properties include text, destination/action, URL or page target, target mode, size, alignment, colors, border/radius and typography.
+6. Image upload must display the actual image, not only its filename, and retain URI permission.
+7. Style controls use visual/color inputs; Code is advanced/optional.
+8. Pages can be created, selected and renamed.
+9. Preview renders the actual page.
+10. Export produces usable website files.
+11. Save persists project/page/block state.
+12. Editor should not require replacing the entire app architecture merely to add individual features.
