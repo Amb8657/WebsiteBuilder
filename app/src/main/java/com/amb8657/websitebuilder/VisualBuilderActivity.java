@@ -3,17 +3,19 @@ package com.amb8657.websitebuilder;
 import android.app.*;
 import android.os.*;
 import android.content.*;
+import android.database.Cursor;
 import android.graphics.*;
 import android.graphics.drawable.*;
 import android.net.Uri;
 import android.provider.OpenableColumns;
+import android.util.Base64;
 import android.view.*;
 import android.webkit.WebView;
 import android.widget.*;
 import java.util.*;
 
 public class VisualBuilderActivity extends Activity {
- final int BG=Color.rgb(19,18,23),SOFT=Color.rgb(31,30,36),TEXT=Color.rgb(237,235,243),DIM=Color.rgb(156,153,168),ACCENT=Color.rgb(124,92,255);
+ static final int BG=Color.rgb(19,18,23),SOFT=Color.rgb(31,30,36),TEXT=Color.rgb(237,235,243),DIM=Color.rgb(156,153,168),ACCENT=Color.rgb(124,92,255);
  LinearLayout root,canvasHost,pagesBar,toolsBar; SharedPreferences sp; ArrayList<Project> projects=new ArrayList<>(); Project project; Page page; Block selected; int imageIndex=-1;
  static class Project{String name;ArrayList<Page> pages=new ArrayList<>();Project(String n){name=n;}}
  static class Page{String name;int bg=Color.WHITE,text=Color.DKGRAY,accent=ACCENT;ArrayList<Block> blocks=new ArrayList<>();Page(String n){name=n;}}
