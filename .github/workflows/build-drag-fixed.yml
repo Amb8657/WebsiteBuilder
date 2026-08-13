@@ -1,0 +1,41 @@
+name: Build APK - Drag Interaction
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Patch visual builder drag interaction
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('app/src/main/java/com/amb8657/websitebuilder/VisualBuilderActivity.java')
+          s=p.read_text()
+          old='holder.setOnClickListener(x->{selected=b;properties(b);});handle.setOnTouchListener((x,e)->resizeTouch(e,holder,b));holder.setOnLongClickListener(x->{dragTouch(holder,b);return true;});'
+          new='final View element=v;element.setOnTouchListener(new View.OnTouchListener(){float sx,sy,ox,oy;boolean moved;public boolean onTouch(View view,MotionEvent e){float den=getResources().getDisplayMetrics().density;switch(e.getActionMasked()){case MotionEvent.ACTION_DOWN:sx=e.getRawX();sy=e.getRawY();ox=holder.getX();oy=holder.getY();moved=false;selected=b;holder.setBackground(shape(Color.rgb(235,230,255),8));return true;case MotionEvent.ACTION_MOVE:float dx=e.getRawX()-sx,dy=e.getRawY()-sy;if(!moved&&Math.hypot(dx,dy)>dp(6))moved=true;if(moved){b.x=Math.max(0,(int)((ox+dx)/den));b.y=Math.max(0,(int)((oy+dy)/den));holder.setX(dp(b.x));holder.setY(dp(b.y));}return true;case MotionEvent.ACTION_UP:if(moved)save(project);else properties(b);return true;}return true;}});handle.setOnTouchListener((x,e)->resizeTouch(e,holder,b));'
+          if old not in s:
+            raise SystemExit('expected interaction code not found')
+          p.write_text(s.replace(old,new))
+          PY
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build APK
+        run: chmod +x gradlew && ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: WebsiteBuilder-drag-fixed-apk
+          path: app/build/outputs/apk/debug/*.apk
