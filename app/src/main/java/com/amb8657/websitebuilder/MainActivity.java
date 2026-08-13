@@ -28,20 +28,34 @@ public class MainActivity extends Activity {
  GradientDrawable shape(int c,float r){GradientDrawable g=new GradientDrawable();g.setColor(c);g.setCornerRadius(dp(r));return g;}
  TextView tv(String s,float z,int c){TextView v=new TextView(this);v.setText(s);v.setTextSize(z);v.setTextColor(c);v.setGravity(Gravity.CENTER_VERTICAL);return v;}
  Button btn(String s){Button b=new Button(this);b.setText(s);b.setTextSize(12);b.setAllCaps(false);b.setTextColor(TEXT);b.setPadding(dp(10),0,dp(10),0);b.setMinHeight(0);b.setMinWidth(0);b.setBackground(shape(SOFT,8));return b;}
- @Override public void onCreate(Bundle b){super.onCreate(b);getWindow().setStatusBarColor(CHROME);prefs=getSharedPreferences("wb",0);load();build();render();}
+ @Override public void onCreate(Bundle b){super.onCreate(b);getWindow().setStatusBarColor(CHROME);getWindow().setNavigationBarColor(SOFT);prefs=getSharedPreferences("wb",0);load();build();render();}
  void build(){
   root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setBackgroundColor(BG);setContentView(root);
-  LinearLayout top=new LinearLayout(this);top.setGravity(Gravity.CENTER_VERTICAL);top.setPadding(dp(10),dp(6),dp(8),dp(6));top.setBackgroundColor(CHROME);root.addView(top,lp(-1,56));
-  TextView mark=tv("P",14,Color.WHITE);mark.setGravity(Gravity.CENTER);mark.setTypeface(Typeface.DEFAULT_BOLD);mark.setBackground(shape(ACCENT,7));top.addView(mark,lp(28,28));
-  TextView brand=tv("Website Builder",14,TEXT);brand.setTypeface(Typeface.DEFAULT_BOLD);top.addView(brand,lp(112,48));
-  projectName=new EditText(this);projectName.setText("My Website");projectName.setTextColor(TEXT);projectName.setTextSize(13);projectName.setSingleLine();projectName.setBackgroundColor(Color.TRANSPARENT);top.addView(projectName,weight(1,44));
-  Button importB=btn("Import"),code=btn("Code"),download=btn("Download");top.addView(importB,lp(62,40));top.addView(code,lp(50,40));download.setTextColor(Color.WHITE);download.setBackground(shape(ACCENT,8));top.addView(download,lp(78,40));
-  LinearLayout work=new LinearLayout(this);work.setOrientation(LinearLayout.VERTICAL);root.addView(work,weight(1,0));
+
+  // Responsive header: keep the project identity on one row and actions on a
+  // second row so phone-sized screens never squeeze the controls together.
+  LinearLayout top=new LinearLayout(this);top.setOrientation(LinearLayout.VERTICAL);top.setBackgroundColor(CHROME);root.addView(top,lp(-1,104));
+  LinearLayout titleRow=new LinearLayout(this);titleRow.setGravity(Gravity.CENTER_VERTICAL);titleRow.setPadding(dp(10),dp(5),dp(10),dp(3));top.addView(titleRow,lp(-1,52));
+  TextView mark=tv("P",14,Color.WHITE);mark.setGravity(Gravity.CENTER);mark.setTypeface(Typeface.DEFAULT_BOLD);mark.setBackground(shape(ACCENT,7));titleRow.addView(mark,lp(28,28));
+  TextView brand=tv("Website Builder",14,TEXT);brand.setTypeface(Typeface.DEFAULT_BOLD);brand.setPadding(dp(8),0,dp(6),0);titleRow.addView(brand,lp(116,44));
+  projectName=new EditText(this);projectName.setText(prefs.getString("project","My Website"));projectName.setTextColor(TEXT);projectName.setTextSize(13);projectName.setSingleLine();projectName.setEllipsize(android.text.TextUtils.TruncateAt.END);projectName.setBackgroundColor(Color.TRANSPARENT);titleRow.addView(projectName,weight(1,42));
+
+  LinearLayout actionRow=new LinearLayout(this);actionRow.setGravity(Gravity.CENTER_VERTICAL);actionRow.setPadding(dp(10),dp(2),dp(10),dp(6));top.addView(actionRow,lp(-1,52));
+  Button importB=btn("Import"),code=btn("Code"),download=btn("Download");
+  actionRow.addView(importB,weight(1,40));
+  actionRow.addView(code,weight(1,40));
+  download.setTextColor(Color.WHITE);download.setBackground(shape(ACCENT,8));actionRow.addView(download,weight(1,40));
+
+  // IMPORTANT: work must match the parent's width. The old weight() helper
+  // creates width=0, which is correct for weighted children in a horizontal
+  // row but wrong for this vertical root. That was collapsing the whole editor.
+  LinearLayout work=new LinearLayout(this);work.setOrientation(LinearLayout.VERTICAL);root.addView(work,new LinearLayout.LayoutParams(-1,0,1));
   HorizontalScrollView psv=new HorizontalScrollView(this);psv.setHorizontalScrollBarEnabled(false);pagesRow=new LinearLayout(this);pagesRow.setGravity(Gravity.CENTER_VERTICAL);pagesRow.setPadding(dp(8),dp(5),dp(8),dp(5));psv.addView(pagesRow);work.addView(psv,lp(-1,52));
   HorizontalScrollView hsv=new HorizontalScrollView(this);hsv.setHorizontalScrollBarEnabled(false);toolsRow=new LinearLayout(this);toolsRow.setPadding(dp(8),dp(6),dp(8),dp(6));toolsRow.setGravity(Gravity.CENTER_VERTICAL);hsv.addView(toolsRow);work.addView(hsv,lp(-1,50));
-  ScrollView sv=new ScrollView(this);sv.setFillViewport(true);canvas=new LinearLayout(this);canvas.setOrientation(LinearLayout.VERTICAL);canvas.setPadding(dp(10),dp(16),dp(10),dp(90));canvas.setBackgroundColor(BG);sv.addView(canvas);work.addView(sv,weight(1,0));
-  bottom=new LinearLayout(this);bottom.setPadding(dp(8),dp(5),dp(8),dp(5));bottom.setBackgroundColor(SOFT);root.addView(bottom,lp(-1,60));
-  Button pagesBtn=btn("Pages"),theme=btn("Theme"),preview=btn("Preview"),save=btn("Save");bottom.addView(pagesBtn,weight(1,50));bottom.addView(theme,weight(1,50));bottom.addView(preview,weight(1,50));bottom.addView(save,weight(1,50));
+  ScrollView sv=new ScrollView(this);sv.setFillViewport(true);canvas=new LinearLayout(this);canvas.setOrientation(LinearLayout.VERTICAL);canvas.setPadding(dp(10),dp(16),dp(10),dp(90));canvas.setBackgroundColor(BG);sv.addView(canvas);work.addView(sv,new LinearLayout.LayoutParams(-1,0,1));
+
+  bottom=new LinearLayout(this);bottom.setGravity(Gravity.CENTER_VERTICAL);bottom.setPadding(dp(8),dp(5),dp(8),dp(5));bottom.setBackgroundColor(SOFT);root.addView(bottom,lp(-1,64));
+  Button pagesBtn=btn("Pages"),theme=btn("Theme"),preview=btn("Preview"),save=btn("Save");bottom.addView(pagesBtn,weight(1,52));bottom.addView(theme,weight(1,52));bottom.addView(preview,weight(1,52));bottom.addView(save,weight(1,52));
   projectName.setOnFocusChangeListener((v,f)->{if(!f){save();renderPages();}});save.setOnClickListener(v->save());pagesBtn.setOnClickListener(v->pageManager());theme.setOnClickListener(v->themeDialog());preview.setOnClickListener(v->preview());importB.setOnClickListener(v->importDialog());code.setOnClickListener(v->showCode());download.setOnClickListener(v->chooseExport());
   String[] ts={"Heading","Text","Image","Button","Divider","Spacer"};for(String s:ts){Button x=btn("+ "+s);x.setOnClickListener(v->addBlock(s));toolsRow.addView(x,lp(92,38));}
  }
