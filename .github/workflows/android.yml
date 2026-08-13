@@ -16,15 +16,8 @@ jobs:
       - name: Prepare release signing keystore
         run: |
           mkdir -p "$HOME/.android"
-          keytool -genkeypair -v \
-            -keystore "$HOME/.android/debug.keystore" \
-            -storepass android \
-            -alias androiddebugkey \
-            -keypass android \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -dname "CN=Website Builder, OU=Development, O=Website Builder, L=India, ST=Maharashtra, C=IN"
+          keytool -genkeypair -v -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,OU=Android,O=Android,L=Mountain View,ST=California,C=US"
+          ls -l "$HOME/.android/debug.keystore"
       - name: Build release APK
         run: gradle --no-daemon assembleRelease
       - name: Verify APK
