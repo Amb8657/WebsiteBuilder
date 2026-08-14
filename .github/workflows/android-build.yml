@@ -16,6 +16,24 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Prepare approved gmail branding and Builder V3 fixes
+        shell: bash
+        run: |
+          set -e
+          mkdir -p app/src/main/res/drawable
+          base64 -d app/src/main/assets/gmail.jpg.b64 > app/src/main/res/drawable/gmail.jpg
+          sed -i 's/@drawable\/ic_maha/@drawable\/gmail/g' app/src/main/AndroidManifest.xml
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app/src/main/java/com/amb8657/websitebuilder/BuilderV3Activity.java')
+          s = p.read_text()
+          if 'import android.graphics.drawable.Drawable;' not in s:
+              s = s.replace('import android.graphics.drawable.GradientDrawable;', 'import android.graphics.drawable.GradientDrawable;\nimport android.graphics.drawable.Drawable;')
+          old = 'TextView l=tv("M",52,WHITE);l.setGravity(Gravity.CENTER);l.setTypeface(Typeface.DEFAULT,Typeface.BOLD);l.setBackground(gd(ACCENT,24));c.addView(l,new LinearLayout.LayoutParams(dp(104),dp(104)));'
+          new = 'ImageView l=new ImageView(this);l.setImageResource(R.drawable.gmail);l.setScaleType(ImageView.ScaleType.CENTER_CROP);c.addView(l,new LinearLayout.LayoutParams(dp(180),dp(180)));'
+          s = s.replace(old, new)
+          p.write_text(s)
+          PY
       - name: Check Gradle installation
         run: gradle --version
       - name: Build debug APK
