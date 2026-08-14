@@ -1,0 +1,71 @@
+name: Gemini Repository Agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: 'Task for Gemini to implement in WebsiteBuilder'
+        required: true
+        type: string
+  issue_comment:
+    types: [created]
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: gemini-agent-${{ github.event.issue.number || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gemini-agent:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@gemini-cli'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Run Gemini CLI Agent
+        uses: google-github-actions/run-gemini-cli@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || '' }}
+          PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || '' }}
+          COMMENT_BODY: ${{ github.event.comment.body || '' }}
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          github_pr_number: ${{ github.event.pull_request.number || github.event.issue.number || '' }}
+          github_issue_number: ${{ github.event.issue.number || '' }}
+          gemini_cli_version: latest
+          settings: |-
+            {
+              "maxSessionTurns": 30,
+              "tools": {
+                "core": [
+                  "read_file",
+                  "write_file",
+                  "replace",
+                  "run_shell_command"
+                ]
+              }
+            }
+          prompt: >-
+            Work directly on the WebsiteBuilder repository.
+            Read GEMINI.md first and inspect the current implementation before changing anything.
+            For workflow_dispatch, implement the supplied task exactly.
+            For an @gemini-cli issue comment, use the comment as the task.
+            For a pull_request event, inspect the current changes and fix/build/test the repository as appropriate.
+            You have permission to modify the repository. Make real code changes, not just recommendations.
+            Run the Android build after changes and fix failures before finishing.
+            Never expose or commit secrets.
+            Current task: ${{ github.event_name == 'workflow_dispatch' && inputs.prompt || github.event_name == 'issue_comment' && github.event.comment.body || 'Inspect the current WebsiteBuilder V3 implementation, fix the highest-priority unfinished items in GEMINI.md, and build the app.' }}
