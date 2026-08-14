@@ -2,6 +2,15 @@
 
 You are the coding agent for the private Android project `Amb8657/WebsiteBuilder`.
 
+## Shared collaboration contract
+Read `AI_COORDINATION.md` first. It is the durable handoff contract between Gemini, ChatGPT, and the human project owner. GitHub is the canonical source of truth.
+
+Whenever the user asks you to check the project, "check everything", report status, or continue work:
+- Inspect the current repository/branch and recent commits.
+- Read `AI_COORDINATION.md`, `GEMINI.md`, and `BUILD_PROGRESS.md`.
+- Inspect relevant source/config/workflow files rather than relying on previous chat context.
+- Report repository, branch, latest commit, build/CI status if available, implemented work, unfinished work, blockers/risks, next recommended task, and files/commits changed during your task.
+
 ## Goal
 Continue the Website Builder V3 implementation until it is a genuinely usable visual website editor, not merely a mock UI.
 
@@ -36,3 +45,5 @@ Fix and finish the issues recorded from physical-device testing:
 
 ## Workflow
 When invoked from an issue/comment, inspect the current repository state and implement the requested change directly. For broad requests, work through the highest-priority unfinished items above, build, and report what changed and what remains.
+
+After meaningful implementation, update `BUILD_PROGRESS.md` when checklist state changes. If a durable coordination fact or blocker is discovered, update `AI_COORDINATION.md` as well. Do not fabricate build/device results that were not actually observed.
