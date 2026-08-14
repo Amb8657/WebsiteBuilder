@@ -19,9 +19,9 @@ jobs:
       - name: Check Gradle installation
         run: gradle --version
       - name: Build debug APK
-        run: gradle assembleDebug --stacktrace
+        run: gradle assembleDebug --stacktrace -PversionCode=${{ github.run_number }} -PversionName=1.0.${{ github.run_number }}
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: maha-builder-debug-apk
+          name: maha-builder-debug-apk-v${{ github.run_number }}
           path: app/build/outputs/apk/debug/*.apk
