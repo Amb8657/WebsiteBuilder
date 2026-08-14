@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
@@ -21,7 +21,7 @@ jobs:
       - name: Build debug APK
         run: gradle assembleDebug --stacktrace -PversionCode=${{ github.run_number }} -PversionName=1.0.${{ github.run_number }}
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: maha-builder-debug-apk-v${{ github.run_number }}
           path: app/build/outputs/apk/debug/*.apk
