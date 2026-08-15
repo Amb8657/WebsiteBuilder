@@ -24,7 +24,7 @@ jobs:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0 emulator system-images;android-35;google_apis;x86_64'
       - name: Enable KVM
         run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          echo 'KERNEL="kvm", GROUP="kvm", MODE="0666", OPTIONS="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       - name: Run canonical V4 on Android Emulator
@@ -49,9 +49,12 @@ jobs:
             sleep 3
             adb shell dumpsys activity activities | grep -q 'com.amb8657.websitebuilder/.WebsiteBuilderV4Activity'
             adb exec-out screencap -p > v4-launch.png
-            APP_PID=$(adb shell pidof com.amb8657.websitebuilder | tr -d '\r')
-            test -n "$APP_PID"
-            adb logcat --pid="$APP_PID" -d > v4-logcat.txt
+
+            # Capture logs by application UID rather than PID. Android may recycle or
+            # briefly omit the process PID even though the launched activity is valid.
+            APP_UID=$(adb shell dumpsys package com.amb8657.websitebuilder | sed -n 's/.*userId=\([0-9][0-9]*\).*/\1/p' | head -1 | tr -d '\r')
+            test -n "$APP_UID"
+            adb logcat --uid="$APP_UID" -d > v4-logcat.txt
             ! grep -qE 'FATAL EXCEPTION|Process: com\.amb8657\.websitebuilder' v4-logcat.txt
       - name: Upload emulator evidence
         if: always()
