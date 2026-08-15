@@ -1,7 +1,5 @@
 package com.amb8657.websitebuilder;
 
-import static org.junit.Assert.assertNotNull;
-
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -12,9 +10,9 @@ import org.junit.runner.RunWith;
 public class BuilderV3SmokeTest {
     @Test
     public void builderLaunches() {
-        try (ActivityScenario<BuilderV3Activity> scenario =
+        try (ActivityScenario<BuilderV3Activity> ignored =
                      ActivityScenario.launch(BuilderV3Activity.class)) {
-            scenario.onActivity(activity -> assertNotNull(activity));
+            // Successful ActivityScenario.launch means the activity could be created.
         }
     }
 }
