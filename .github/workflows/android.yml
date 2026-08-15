@@ -13,19 +13,38 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-      - name: Prepare release signing keystore
+      - name: Prepare branding and release signing
         run: |
-          mkdir -p "$HOME/.android"
+          set -e
+          mkdir -p app/src/main/res/drawable "$HOME/.android"
+          base64 -d app/src/main/assets/gmail.jpg.b64 > app/src/main/res/drawable/gmail.jpg
+          sed -i 's/@drawable\/ic_maha/@drawable\/gmail/g' app/src/main/AndroidManifest.xml
           keytool -genkeypair -v -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,OU=Android,O=Android,L=Mountain View,ST=California,C=US"
-          ls -l "$HOME/.android/debug.keystore"
+      - name: Apply Builder V3 CI fixes
+        run: |
+          set -e
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app/src/main/java/com/amb8657/websitebuilder/BuilderV3Activity.java')
+          s = p.read_text()
+          if 'import android.graphics.drawable.Drawable;' not in s:
+              s = s.replace('import android.graphics.drawable.GradientDrawable;', 'import android.graphics.drawable.GradientDrawable;\nimport android.graphics.drawable.Drawable;')
+          old = 'TextView l=tv("M",52,WHITE);l.setGravity(Gravity.CENTER);l.setTypeface(Typeface.DEFAULT,Typeface.BOLD);l.setBackground(gd(ACCENT,24));c.addView(l,new LinearLayout.LayoutParams(dp(104),dp(104)));'
+          new = 'ImageView l=new ImageView(this);l.setImageResource(R.drawable.gmail);l.setScaleType(ImageView.ScaleType.CENTER_CROP);c.addView(l,new LinearLayout.LayoutParams(dp(180),dp(180)));'
+          s = s.replace(old, new)
+          p.write_text(s)
+          PY
+          grep -q 'import android.graphics.drawable.Drawable;' app/src/main/java/com/amb8657/websitebuilder/BuilderV3Activity.java
       - name: Build release APK
-        run: gradle --no-daemon assembleRelease
+        run: gradle --no-daemon assembleRelease --stacktrace
       - name: Verify APK
         run: |
-          test -s app/build/outputs/apk/release/app-release.apk
-          $ANDROID_HOME/build-tools/35.0.0/apksigner verify --verbose app/build/outputs/apk/release/app-release.apk
+          set -e
+          APK=app/build/outputs/apk/release/app-release.apk
+          test -s "$APK"
+          $ANDROID_HOME/build-tools/35.0.0/zipalign -c -P 16 4 "$APK"
+          $ANDROID_HOME/build-tools/35.0.0/apksigner verify --verbose "$APK"
       - uses: actions/upload-artifact@v4
         with:
           name: WebsiteBuilder-final-apk
           path: app/build/outputs/apk/release/app-release.apk
-# Force rebuild after the source repair commit.
