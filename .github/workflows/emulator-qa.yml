@@ -23,11 +23,15 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
         with:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0 emulator system-images;android-35;google_apis;x86_64'
+
+      - name: Generate Gradle wrapper
+        run: gradle wrapper --gradle-version 8.7
 
       - name: Run canonical V4 on accelerated Android Emulator
         uses: reactivecircus/android-emulator-runner@v2.38.0
@@ -43,11 +47,10 @@ jobs:
           emulator-boot-timeout: 900
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          # Start ADB before the emulator so the emulator does not race a
-          # newly-started daemon and remain stuck in the "device offline" state.
           pre-emulator-launch-script: adb start-server
           script: |
             set -euxo pipefail
+            cd "$GITHUB_WORKSPACE"
             ./gradlew --no-daemon clean assembleDebug connectedDebugAndroidTest --stacktrace
 
             adb wait-for-device
