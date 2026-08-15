@@ -7,8 +7,8 @@ android {
         applicationId 'com.amb8657.websitebuilder'
         minSdk 23
         targetSdk 35
-        versionCode = providers.gradleProperty('versionCode').orElse('172').get().toInteger()
-        versionName = providers.gradleProperty('versionName').orElse('1.0.2').get()
+        versionCode = providers.gradleProperty('versionCode').orElse('173').get().toInteger()
+        versionName = providers.gradleProperty('versionName').orElse('1.0.3').get()
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     signingConfigs {
