@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -16,26 +18,27 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Prepare approved gmail branding and Builder V3 fixes
+      - name: Prepare Gmail launcher and Option 2 source
         shell: bash
         run: |
           set -e
           mkdir -p app/src/main/res/drawable
           base64 -d app/src/main/assets/gmail.jpg.b64 > app/src/main/res/drawable/gmail.jpg
           sed -i 's/@drawable\/ic_maha/@drawable\/gmail/g' app/src/main/AndroidManifest.xml
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('app/src/main/java/com/amb8657/websitebuilder/BuilderV3Activity.java')
-          s = p.read_text()
-          if 'import android.graphics.drawable.Drawable;' not in s:
-              s = s.replace('import android.graphics.drawable.GradientDrawable;', 'import android.graphics.drawable.GradientDrawable;\nimport android.graphics.drawable.Drawable;')
-          old = 'TextView l=tv("M",52,WHITE);l.setGravity(Gravity.CENTER);l.setTypeface(Typeface.DEFAULT,Typeface.BOLD);l.setBackground(gd(ACCENT,24));c.addView(l,new LinearLayout.LayoutParams(dp(104),dp(104)));'
-          new = 'ImageView l=new ImageView(this);l.setImageResource(R.drawable.gmail);l.setScaleType(ImageView.ScaleType.CENTER_CROP);c.addView(l,new LinearLayout.LayoutParams(dp(180),dp(180)));'
-          s = s.replace(old, new)
-          p.write_text(s)
-          PY
-          # QA batch: compile the exact Builder V3 source after applying the CI-safe import patch.
-          grep -q 'import android.graphics.drawable.Drawable;' app/src/main/java/com/amb8657/websitebuilder/BuilderV3Activity.java
+          python3 .github/scripts/patch_option2.py
+          grep -q 'postDelayed(this::dashboard,1800)' app/src/main/java/com/amb8657/websitebuilder/BuilderV3Activity.java
+          grep -q 'animationDialog' app/src/main/java/com/amb8657/websitebuilder/BuilderV3Activity.java
+      - name: Persist source changes
+        shell: bash
+        run: |
+          set -e
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/src/main/java/com/amb8657/websitebuilder/BuilderV3Activity.java app/src/main/AndroidManifest.xml
+          if ! git diff --cached --quiet; then
+            git commit -m 'Implement Option 2 splash and interaction fixes [skip ci]'
+            git push
+          fi
       - name: Check Gradle installation
         run: gradle --version
       - name: Build debug APK
