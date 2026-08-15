@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 p=Path('app/src/main/java/com/amb8657/websitebuilder/BuilderV3Activity.java')
 s=p.read_text()
 def between(a,b,r):
@@ -12,9 +13,13 @@ between('    void splash(){','    void load(){','''    void splash(){base();root
 
 ''')
 s=s.replace('new String[]{"Text","Image","Button","Section","Spacer","Shape","Tool"}','new String[]{"Text","Image","Button","Section","Shape","Tool"}')
-s=s.replace('Button tc=btn("Text colour");box.addView(tc);','Button tc=btn("Text colour");box.addView(tc);Button an=btn("Animation: "+b.animation);box.addView(an);an.setOnClickListener(v->animationDialog(b,an));')
-s=s.replace('v.setBackground(fill(b));v.setAlpha(b.opacity);FrameLayout.LayoutParams lp=','v.setBackground(fill(b));v.setAlpha(b.opacity);applyAnimation(v,b);FrameLayout.LayoutParams lp=')
-s=s.replace('    void radius(Block b){','''    void animationDialog(Block b,Button label){String[] a={"None","Fade In","Slide Up","Slide Left","Scale In"};new AlertDialog.Builder(this).setTitle("Animation / Interaction").setItems(a,(d,w)->{b.animation=a[w];label.setText("Animation: "+b.animation);save();}).show();}
+s=re.sub(r'Button an=btn\("Animation: "\+b\.animation\);box\.addView\(an\);an\.setOnClickListener\(v->animationDialog\(b,an\)\);','',s)
+s=s.replace('Button tc=btn("Text colour");box.addView(tc);','Button tc=btn("Text colour");box.addView(tc);Button an=btn("Animation: "+b.animation);box.addView(an);an.setOnClickListener(v->animationDialog(b,an));',1)
+s=re.sub(r'\n    void animationDialog\(Block b,Button label\)\{.*?(?=\n    void radius\(Block b\)\{)', '\n', s, flags=re.S)
+helper='''    void animationDialog(Block b,Button label){String[] a={"None","Fade In","Slide Up","Slide Left","Scale In"};new AlertDialog.Builder(this).setTitle("Animation / Interaction").setItems(a,(d,w)->{b.animation=a[w];label.setText("Animation: "+b.animation);save();}).show();}
     void applyAnimation(View v,Block b){if("Fade In".equals(b.animation)){v.setAlpha(0f);v.animate().alpha(b.opacity).setDuration(450).start();}else if("Slide Up".equals(b.animation)){v.setTranslationY(dp(30));v.animate().translationY(0).setDuration(450).start();}else if("Slide Left".equals(b.animation)){v.setTranslationX(dp(30));v.animate().translationX(0).setDuration(450).start();}else if("Scale In".equals(b.animation)){v.setScaleX(.75f);v.setScaleY(.75f);v.animate().scaleX(1).scaleY(1).setDuration(450).start();}}
-    void radius(Block b){''')
+'''
+s=s.replace('    void radius(Block b){',helper+'    void radius(Block b){',1)
+if 'v.setBackground(fill(b));v.setAlpha(b.opacity);applyAnimation(v,b);' not in s:
+    s=s.replace('v.setBackground(fill(b));v.setAlpha(b.opacity);FrameLayout.LayoutParams lp=','v.setBackground(fill(b));v.setAlpha(b.opacity);applyAnimation(v,b);FrameLayout.LayoutParams lp=')
 p.write_text(s)
