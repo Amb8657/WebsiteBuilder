@@ -77,6 +77,7 @@ public class BuilderV3Activity extends Activity {
 
 
 
+
     void animationDialog(Block b,Button label){String[] a={"None","Fade In","Slide Up","Slide Left","Scale In"};new AlertDialog.Builder(this).setTitle("Animation / Interaction").setItems(a,(d,w)->{b.animation=a[w];label.setText("Animation: "+b.animation);save();}).show();}
     void applyAnimation(View v,Block b){if("Fade In".equals(b.animation)){v.setAlpha(0f);v.animate().alpha(b.opacity).setDuration(450).start();}else if("Slide Up".equals(b.animation)){v.setTranslationY(dp(30));v.animate().translationY(0).setDuration(450).start();}else if("Slide Left".equals(b.animation)){v.setTranslationX(dp(30));v.animate().translationX(0).setDuration(450).start();}else if("Scale In".equals(b.animation)){v.setScaleX(.75f);v.setScaleY(.75f);v.animate().scaleX(1).scaleY(1).setDuration(450).start();}}
     void radius(Block b){SeekBar s=new SeekBar(this);s.setMax(100);s.setProgress((int)b.radius);new AlertDialog.Builder(this).setTitle("Corner radius").setView(s).setNegativeButton("Cancel",null).setPositiveButton("Apply",(d,w)->{b.radius=s.getProgress();save();render();}).show();}
