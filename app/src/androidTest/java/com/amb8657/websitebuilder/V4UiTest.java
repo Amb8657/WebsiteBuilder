@@ -1,28 +1,34 @@
 package com.amb8657.websitebuilder;
 
-import androidx.test.ext.junit.rules.ActivityScenarioRule;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
+import android.content.Intent;
 
-import org.junit.Rule;
+import androidx.test.core.app.ActivityScenario;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.UiDevice;
+import androidx.test.uiautomator.Until;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
 public class V4UiTest {
-    @Rule public ActivityScenarioRule<WebsiteBuilderV4Activity> activity =
-            new ActivityScenarioRule<>(WebsiteBuilderV4Activity.class);
+    @Test public void dashboardShowsCanonicalWorkflow() {
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        Intent intent = new Intent(InstrumentationRegistry.getInstrumentation().getTargetContext(), WebsiteBuilderV4Activity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
-    @Test public void dashboardShowsCanonicalWorkflow() throws Exception {
-        Thread.sleep(2600);
-        onView(withText("Website Builder")).check(matches(isDisplayed()));
-        onView(withText("Build something beautiful")).check(matches(isDisplayed()));
-        onView(withText(containsString("Create a website"))).check(matches(isDisplayed()));
-        onView(withText("Quick add")).check(matches(isDisplayed()));
+        try (ActivityScenario<WebsiteBuilderV4Activity> ignored =
+                     ActivityScenario.launch(intent)) {
+            assertTrue("Website Builder heading not visible", device.wait(Until.hasObject(By.text("Website Builder")), 10000));
+            assertTrue("V4 hero heading not visible", device.wait(Until.hasObject(By.text("Build something beautiful")), 10000));
+            assertTrue("Create action not visible", device.wait(Until.hasObject(By.textContains("Create a website")), 5000));
+            assertTrue("Quick add section not visible", device.wait(Until.hasObject(By.text("Quick add")), 5000));
+            assertNotNull("V4 activity did not create a window", device.getCurrentPackage());
+        }
     }
 }
