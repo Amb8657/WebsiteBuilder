@@ -27,21 +27,21 @@ jobs:
       - name: Install required Android SDK packages
         run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Build release APK
-        run: gradle --no-daemon clean assembleRelease --stacktrace
+      - name: Build debug APK
+        run: gradle --no-daemon clean assembleDebug --stacktrace
 
       - name: Verify APK
         run: |
           set -e
-          APK=app/build/outputs/apk/release/app-release.apk
+          APK=app/build/outputs/apk/debug/app-debug.apk
           test -s "$APK"
           $ANDROID_HOME/build-tools/35.0.0/zipalign -c -P 16 4 "$APK"
           $ANDROID_HOME/build-tools/35.0.0/apksigner verify --verbose "$APK"
           echo "APK verified: $APK"
 
-      - name: Upload final APK
+      - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: WebsiteBuilder-V4-final-apk
-          path: app/build/outputs/apk/release/app-release.apk
+          name: WebsiteBuilder-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
