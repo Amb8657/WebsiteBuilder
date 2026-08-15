@@ -7,7 +7,7 @@ on:
 
 # Canonical V4 verification workflow.
 # Uses the community-tested ReactiveCircus/android-emulator-runner action.
-# macOS hosted runners use Apple's Hypervisor.framework for VM acceleration.
+# Keep the emulator configuration aligned with the action's documented defaults.
 jobs:
   emulator-qa:
     runs-on: macos-15-intel
@@ -41,8 +41,11 @@ jobs:
           disk-size: 4096M
           force-avd-creation: true
           emulator-boot-timeout: 900
-          emulator-options: -no-window -gpu host -noaudio -no-boot-anim -camera-back none -no-metrics -no-snapshot-load -no-snapshot-save
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
           disable-animations: true
+          # Start ADB before the emulator so the emulator does not race a
+          # newly-started daemon and remain stuck in the "device offline" state.
+          pre-emulator-launch-script: adb start-server
           script: |
             set -euxo pipefail
             ./gradlew --no-daemon clean assembleDebug connectedDebugAndroidTest --stacktrace
