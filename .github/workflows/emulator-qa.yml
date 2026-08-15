@@ -62,6 +62,14 @@ jobs:
             # wait for the launch instead of using fragile sleep/poll loops.
             adb shell am start -W -n com.amb8657.websitebuilder/.WebsiteBuilderV4Activity
 
+            # Verify the branded splash is actually visible before its 2.2s handoff.
+            sleep 1
+            adb shell uiautomator dump /sdcard/v4-splash.xml >/dev/null
+            adb shell cat /sdcard/v4-splash.xml > v4-splash.xml
+            grep -q 'Gmail branding' v4-splash.xml
+
+            # Allow the intentional splash handoff to complete.
+            sleep 2
             adb shell dumpsys activity activities > activity-dump.txt
             grep -q 'com.amb8657.websitebuilder/.WebsiteBuilderV4Activity' activity-dump.txt
 
@@ -88,6 +96,7 @@ jobs:
         with:
           name: emulator-qa-evidence-${{ github.run_number }}
           path: |
+            v4-splash.xml
             v4-launch.png
             v4-logcat.txt
             v4-window.xml
