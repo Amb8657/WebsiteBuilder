@@ -6,12 +6,11 @@ on:
   workflow_dispatch:
 
 # Canonical V4 verification workflow.
-# Uses ReactiveCircus/android-emulator-runner, a widely used open-source
-# GitHub Action. macOS hosted runners provide Hypervisor.framework acceleration,
-# avoiding the Linux nested-KVM failure seen on this repository.
+# Uses the community-tested ReactiveCircus/android-emulator-runner action.
+# macOS hosted runners use Apple's Hypervisor.framework for VM acceleration.
 jobs:
   emulator-qa:
-    runs-on: macos-latest
+    runs-on: macos-15-intel
     permissions:
       contents: read
     timeout-minutes: 30
@@ -31,7 +30,7 @@ jobs:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0 emulator system-images;android-35;google_apis;x86_64'
 
       - name: Run canonical V4 on accelerated Android Emulator
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@v2.38.0
         with:
           api-level: 35
           target: google_apis
@@ -41,6 +40,7 @@ jobs:
           ram-size: 3072M
           disk-size: 4096M
           force-avd-creation: true
+          emulator-boot-timeout: 900
           emulator-options: -no-window -gpu host -noaudio -no-boot-anim -camera-back none -no-metrics -no-snapshot-load -no-snapshot-save
           disable-animations: true
           script: |
@@ -48,7 +48,7 @@ jobs:
             ./gradlew --no-daemon clean assembleDebug connectedDebugAndroidTest --stacktrace
 
             adb wait-for-device
-            for i in $(seq 1 60); do
+            for i in $(seq 1 90); do
               boot=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
               [ "$boot" = "1" ] && break
               sleep 2
@@ -60,7 +60,7 @@ jobs:
             adb shell am force-stop com.amb8657.websitebuilder || true
             adb shell monkey -p com.amb8657.websitebuilder 1
 
-            for i in $(seq 1 30); do
+            for i in $(seq 1 45); do
               if adb shell dumpsys activity activities 2>/dev/null | grep -q 'com.amb8657.websitebuilder/.WebsiteBuilderV4Activity'; then
                 break
               fi
