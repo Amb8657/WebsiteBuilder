@@ -2,10 +2,13 @@ package com.amb8657.websitebuilder;
 
 /** Converts handle movement into bounded element geometry changes. */
 public final class ResizeController {
+    public static final int MIN_DIMENSION_DP = 24;
     public static final class Geometry {
         public int x, y, width, height;
         public Geometry(int x, int y, int width, int height) {
-            this.x = x; this.y = y; this.width = width; this.height = height;
+            this.x = x; this.y = y;
+            this.width = Math.max(MIN_DIMENSION_DP, width);
+            this.height = Math.max(MIN_DIMENSION_DP, height);
         }
     }
 
@@ -19,20 +22,22 @@ public final class ResizeController {
 
         if (left) {
             int delta = Math.round(dx);
-            int next = Math.max(EditorState.MIN_ELEMENT_WIDTH_DP, g.width - delta);
+            int next = Math.max(MIN_DIMENSION_DP, g.width - delta);
             g.x += g.width - next;
             g.width = next;
         } else if (right) {
-            g.width = Math.max(EditorState.MIN_ELEMENT_WIDTH_DP, g.width + Math.round(dx));
+            g.width = Math.max(MIN_DIMENSION_DP, g.width + Math.round(dx));
         }
         if (top) {
             int delta = Math.round(dy);
-            int next = Math.max(EditorState.MIN_ELEMENT_HEIGHT_DP, g.height - delta);
+            int next = Math.max(MIN_DIMENSION_DP, g.height - delta);
             g.y += g.height - next;
             g.height = next;
         } else if (bottom) {
-            g.height = Math.max(EditorState.MIN_ELEMENT_HEIGHT_DP, g.height + Math.round(dy));
+            g.height = Math.max(MIN_DIMENSION_DP, g.height + Math.round(dy));
         }
+        g.x = Math.max(0, g.x);
+        g.y = Math.max(0, g.y);
         return g;
     }
 }
