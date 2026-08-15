@@ -22,19 +22,12 @@ jobs:
         uses: android-actions/setup-android@v4
         with:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0 emulator system-images;android-35;google_apis;x86_64'
-      - name: Prepare Gmail launcher and Option 2 source
-        run: |
-          set -e
-          mkdir -p app/src/main/res/drawable
-          base64 -d app/src/main/assets/gmail.jpg.b64 > app/src/main/res/drawable/gmail.jpg
-          sed -i 's/@drawable\/ic_maha/@drawable\/gmail/g' app/src/main/AndroidManifest.xml
-          python3 .github/scripts/patch_option2.py
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      - name: Run Builder V3 on Android Emulator
+      - name: Run canonical V4 on Android Emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
@@ -49,23 +42,22 @@ jobs:
           disable-animations: true
           script: |
             set -e
-            gradle assembleDebug --stacktrace -PversionCode=${{ github.run_number }} -PversionName=1.0.${{ github.run_number }}
-            gradle connectedDebugAndroidTest --stacktrace
-            adb shell am force-stop com.amb8657.websitebuilder || true
+            if [ -x ./gradlew ]; then ./gradlew assembleDebug connectedDebugAndroidTest --stacktrace; else gradle assembleDebug connectedDebugAndroidTest --stacktrace; fi
             adb install -r app/build/outputs/apk/debug/app-debug.apk
+            adb shell am force-stop com.amb8657.websitebuilder || true
             adb shell monkey -p com.amb8657.websitebuilder 1
             sleep 3
-            adb shell dumpsys activity activities | grep -q 'com.amb8657.websitebuilder/.BuilderV3Activity'
-            adb exec-out screencap -p > builder-v3-launch.png
-            adb logcat -d > builder-v3-logcat.txt
-            ! grep -qE 'FATAL EXCEPTION|AndroidRuntime' builder-v3-logcat.txt
+            adb shell dumpsys activity activities | grep -q 'com.amb8657.websitebuilder/.WebsiteBuilderV4Activity'
+            adb exec-out screencap -p > v4-launch.png
+            adb logcat -d > v4-logcat.txt
+            ! grep -qE 'FATAL EXCEPTION|AndroidRuntime' v4-logcat.txt
       - name: Upload emulator evidence
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: emulator-qa-evidence-${{ github.run_number }}
           path: |
-            builder-v3-launch.png
-            builder-v3-logcat.txt
+            v4-launch.png
+            v4-logcat.txt
             app/build/outputs/androidTest-results/**
             app/build/outputs/connected_android_test_additional_output/**
