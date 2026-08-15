@@ -25,6 +25,14 @@ jobs:
         with:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0 emulator system-images;android-35;google_apis;x86_64'
 
+      - name: Prepare Builder V3 branding
+        run: |
+          set -e
+          mkdir -p app/src/main/res/drawable
+          base64 -d app/src/main/assets/gmail.jpg.b64 > app/src/main/res/drawable/gmail.jpg
+          sed -i 's/@drawable\/ic_maha/@drawable\/gmail/g' app/src/main/AndroidManifest.xml
+          grep -q 'android:icon="@drawable/gmail"' app/src/main/AndroidManifest.xml
+
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -52,8 +60,10 @@ jobs:
             adb install -r app/build/outputs/apk/debug/app-debug.apk
             adb shell monkey -p com.amb8657.websitebuilder 1
             sleep 5
+            adb shell dumpsys activity activities | grep -q 'com.amb8657.websitebuilder/.BuilderV3Activity'
             adb exec-out screencap -p > builder-v3-launch.png
             adb logcat -d > builder-v3-logcat.txt
+            ! grep -qE 'FATAL EXCEPTION|AndroidRuntime' builder-v3-logcat.txt
 
       - name: Upload emulator evidence
         if: always()
