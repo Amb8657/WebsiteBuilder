@@ -38,7 +38,7 @@ jobs:
           ram-size: 2048M
           disk-size: 4096M
           force-avd-creation: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-metrics
           disable-animations: true
           script: |
             set -e
@@ -49,8 +49,10 @@ jobs:
             sleep 3
             adb shell dumpsys activity activities | grep -q 'com.amb8657.websitebuilder/.WebsiteBuilderV4Activity'
             adb exec-out screencap -p > v4-launch.png
-            adb logcat -d > v4-logcat.txt
-            ! grep -qE 'FATAL EXCEPTION|AndroidRuntime' v4-logcat.txt
+            APP_PID=$(adb shell pidof com.amb8657.websitebuilder | tr -d '\r')
+            test -n "$APP_PID"
+            adb logcat --pid="$APP_PID" -d > v4-logcat.txt
+            ! grep -qE 'FATAL EXCEPTION|Process: com\.amb8657\.websitebuilder' v4-logcat.txt
       - name: Upload emulator evidence
         if: always()
         uses: actions/upload-artifact@v7
