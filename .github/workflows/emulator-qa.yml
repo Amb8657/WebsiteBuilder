@@ -6,9 +6,12 @@ on:
   workflow_dispatch:
 
 # Canonical V4 verification workflow.
+# Uses ReactiveCircus/android-emulator-runner, a widely used open-source
+# GitHub Action. macOS hosted runners provide Hypervisor.framework acceleration,
+# avoiding the Linux nested-KVM failure seen on this repository.
 jobs:
   emulator-qa:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     permissions:
       contents: read
     timeout-minutes: 30
@@ -27,16 +30,7 @@ jobs:
         with:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0 emulator system-images;android-35;google_apis;x86_64'
 
-      - name: Enable KVM
-        run: |
-          if [ -e /dev/kvm ]; then
-            sudo chmod 666 /dev/kvm || true
-            echo "KVM available"
-          else
-            echo "KVM is unavailable on this runner; emulator may fall back to software acceleration"
-          fi
-
-      - name: Run canonical V4 on Android Emulator
+      - name: Run canonical V4 on accelerated Android Emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
@@ -47,15 +41,11 @@ jobs:
           ram-size: 3072M
           disk-size: 4096M
           force-avd-creation: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-metrics -no-snapshot-load -no-snapshot-save -accel auto
+          emulator-options: -no-window -gpu host -noaudio -no-boot-anim -camera-back none -no-metrics -no-snapshot-load -no-snapshot-save
           disable-animations: true
           script: |
             set -euxo pipefail
-            if [ -x ./gradlew ]; then
-              ./gradlew --no-daemon clean assembleDebug connectedDebugAndroidTest --stacktrace
-            else
-              gradle --no-daemon clean assembleDebug connectedDebugAndroidTest --stacktrace
-            fi
+            ./gradlew --no-daemon clean assembleDebug connectedDebugAndroidTest --stacktrace
 
             adb wait-for-device
             for i in $(seq 1 60); do
