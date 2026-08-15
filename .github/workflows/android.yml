@@ -3,6 +3,8 @@ on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -13,28 +15,40 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-      - name: Prepare branding and release signing
+      - name: Prepare stable signing and Gmail branding
+        shell: bash
         run: |
           set -e
-          mkdir -p app/src/main/res/drawable "$HOME/.android"
+          mkdir -p app/src/main/res/drawable "$HOME/.android" app/src/main/assets
+          if [ ! -s app/src/main/assets/stable-debug.keystore.b64 ]; then
+            keytool -genkeypair -v -keystore /tmp/stable-debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,OU=Android,O=Android,L=Mountain View,ST=California,C=US" >/tmp/keytool.log 2>&1
+            base64 -w0 /tmp/stable-debug.keystore > app/src/main/assets/stable-debug.keystore.b64
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add app/src/main/assets/stable-debug.keystore.b64
+            git commit -m 'Persist stable APK signing key [skip ci]'
+            git push
+          fi
+          base64 -d app/src/main/assets/stable-debug.keystore.b64 > "$HOME/.android/debug.keystore"
           base64 -d app/src/main/assets/gmail.jpg.b64 > app/src/main/res/drawable/gmail.jpg
           sed -i 's/@drawable\/ic_maha/@drawable\/gmail/g' app/src/main/AndroidManifest.xml
-          keytool -genkeypair -v -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,OU=Android,O=Android,L=Mountain View,ST=California,C=US"
-      - name: Apply Builder V3 CI fixes
+      - name: Apply Option 2 Builder fixes
         run: |
           set -e
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('app/src/main/java/com/amb8657/websitebuilder/BuilderV3Activity.java')
-          s = p.read_text()
-          if 'import android.graphics.drawable.Drawable;' not in s:
-              s = s.replace('import android.graphics.drawable.GradientDrawable;', 'import android.graphics.drawable.GradientDrawable;\nimport android.graphics.drawable.Drawable;')
-          old = 'TextView l=tv("M",52,WHITE);l.setGravity(Gravity.CENTER);l.setTypeface(Typeface.DEFAULT,Typeface.BOLD);l.setBackground(gd(ACCENT,24));c.addView(l,new LinearLayout.LayoutParams(dp(104),dp(104)));'
-          new = 'ImageView l=new ImageView(this);l.setImageResource(R.drawable.gmail);l.setScaleType(ImageView.ScaleType.CENTER_CROP);c.addView(l,new LinearLayout.LayoutParams(dp(180),dp(180)));'
-          s = s.replace(old, new)
-          p.write_text(s)
-          PY
-          grep -q 'import android.graphics.drawable.Drawable;' app/src/main/java/com/amb8657/websitebuilder/BuilderV3Activity.java
+          python3 .github/scripts/patch_option2.py
+          grep -q 'postDelayed(this::dashboard,1800)' app/src/main/java/com/amb8657/websitebuilder/BuilderV3Activity.java
+          grep -q 'animationDialog' app/src/main/java/com/amb8657/websitebuilder/BuilderV3Activity.java
+      - name: Persist Builder source changes
+        shell: bash
+        run: |
+          set -e
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/src/main/java/com/amb8657/websitebuilder/BuilderV3Activity.java app/src/main/AndroidManifest.xml
+          if ! git diff --cached --quiet; then
+            git commit -m 'Implement Option 2 splash and interaction fixes [skip ci]'
+            git push
+          fi
       - name: Build release APK
         run: gradle --no-daemon assembleRelease --stacktrace
       - name: Verify APK
