@@ -5,6 +5,7 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+# Canonical V4 verification workflow.
 jobs:
   emulator-qa:
     runs-on: ubuntu-latest
