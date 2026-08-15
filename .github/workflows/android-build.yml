@@ -34,6 +34,8 @@ jobs:
           s = s.replace(old, new)
           p.write_text(s)
           PY
+          # QA batch: compile the exact Builder V3 source after applying the CI-safe import patch.
+          grep -q 'import android.graphics.drawable.Drawable;' app/src/main/java/com/amb8657/websitebuilder/BuilderV3Activity.java
       - name: Check Gradle installation
         run: gradle --version
       - name: Build debug APK
