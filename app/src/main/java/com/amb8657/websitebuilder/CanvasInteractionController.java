@@ -1,17 +1,23 @@
 package com.amb8657.websitebuilder;
 
-/** Coordinates selection and gesture state for the visual canvas. */
+/** Coordinates selection and bounded gesture state for the visual canvas. */
 public final class CanvasInteractionController {
     private final CanvasSelectionController selection;
     private final CanvasGestureState gesture = new CanvasGestureState();
+    private int canvasWidth = Integer.MAX_VALUE;
+    private int canvasHeight = Integer.MAX_VALUE;
 
-    public CanvasInteractionController(CanvasSelectionController selection) {
-        this.selection = selection;
+    public CanvasInteractionController(CanvasSelectionController selection) { this.selection = selection; }
+
+    public void setCanvasBounds(int width, int height) {
+        canvasWidth = Math.max(0, width);
+        canvasHeight = Math.max(0, height);
     }
 
     public void selectAndMove(String id, float x, float y) {
         selection.select(id);
-        gesture.beginMove(id, x, y);
+        gesture.beginMove(id, TouchGeometry.clampX(Math.round(x), canvasWidth, 24),
+                TouchGeometry.clampY(Math.round(y), canvasHeight, 24));
     }
 
     public void selectAndResize(String id, ResizeHandle handle, float x, float y) {
@@ -20,11 +26,6 @@ public final class CanvasInteractionController {
     }
 
     public CanvasGestureState gesture() { return gesture; }
-
     public void finishGesture() { gesture.reset(); }
-
-    public void clearSelection() {
-        gesture.reset();
-        selection.clearSelection();
-    }
+    public void clearSelection() { gesture.reset(); selection.clearSelection(); }
 }
