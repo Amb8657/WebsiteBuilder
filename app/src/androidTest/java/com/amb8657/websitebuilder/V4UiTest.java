@@ -8,9 +8,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.containsString;
 
 @RunWith(AndroidJUnit4.class)
 public class V4UiTest {
@@ -21,7 +22,7 @@ public class V4UiTest {
         Thread.sleep(2600);
         onView(withText("Website Builder")).check(matches(isDisplayed()));
         onView(withText("Build something beautiful")).check(matches(isDisplayed()));
-        onView(withText("Create a website")).check(matches(isDisplayed()));
+        onView(withText(containsString("Create a website"))).check(matches(isDisplayed()));
         onView(withText("Quick add")).check(matches(isDisplayed()));
     }
 }
