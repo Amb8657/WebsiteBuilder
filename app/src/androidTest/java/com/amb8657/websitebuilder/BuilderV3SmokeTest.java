@@ -2,8 +2,6 @@ package com.amb8657.websitebuilder;
 
 import static org.junit.Assert.assertNotNull;
 
-import android.app.Activity;
-
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -16,7 +14,7 @@ public class BuilderV3SmokeTest {
     public void builderLaunches() {
         try (ActivityScenario<BuilderV3Activity> scenario =
                      ActivityScenario.launch(BuilderV3Activity.class)) {
-            scenario.onActivity((Activity activity) -> assertNotNull(activity));
+            scenario.onActivity(activity -> assertNotNull(activity));
         }
     }
 }
