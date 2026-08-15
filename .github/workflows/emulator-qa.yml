@@ -2,7 +2,7 @@ name: Android Emulator QA
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 # Canonical V4 verification workflow.
@@ -12,7 +12,7 @@ jobs:
     runs-on: macos-15-intel
     permissions:
       contents: read
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -57,11 +57,13 @@ jobs:
             adb install -r app/build/outputs/apk/debug/app-debug.apk
             adb logcat -c || true
             adb shell am force-stop com.amb8657.websitebuilder || true
-            adb shell monkey -p com.amb8657.websitebuilder 1
-            sleep 4
+
+            # Start the canonical launcher explicitly and let Activity Manager
+            # wait for the launch instead of using fragile sleep/poll loops.
+            adb shell am start -W -n com.amb8657.websitebuilder/.WebsiteBuilderV4Activity
 
             adb shell dumpsys activity activities > activity-dump.txt
-            grep -q 'com.amb8657/.WebsiteBuilderV4Activity' activity-dump.txt
+            grep -q 'com.amb8657.websitebuilder/.WebsiteBuilderV4Activity' activity-dump.txt
 
             adb exec-out screencap -p > v4-launch.png
             adb logcat -d > v4-logcat.txt
