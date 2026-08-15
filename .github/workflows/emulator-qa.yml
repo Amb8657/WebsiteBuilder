@@ -94,3 +94,5 @@ jobs:
             v4-window.xml
             app/build/outputs/androidTest-results/**
             app/build/outputs/connected_android_test_additional_output/**
+
+# Community runner reference: https://github.com/ReactiveCircus/android-emulator-runner
