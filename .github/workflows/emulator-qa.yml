@@ -7,7 +7,6 @@ on:
 
 # Canonical V4 verification workflow.
 # Uses the community-tested ReactiveCircus/android-emulator-runner action.
-# Keep the emulator configuration aligned with the action's documented defaults.
 jobs:
   emulator-qa:
     runs-on: macos-15-intel
@@ -51,7 +50,9 @@ jobs:
           script: |
             set -euxo pipefail
             cd "$GITHUB_WORKSPACE"
-            ./gradlew --no-daemon clean assembleDebug connectedDebugAndroidTest --stacktrace
+
+            # Build first; the emulator action has already booted and connected ADB.
+            ./gradlew --no-daemon clean assembleDebug --stacktrace
 
             adb wait-for-device
             for i in $(seq 1 90); do
@@ -88,6 +89,10 @@ jobs:
             grep -q 'Build something beautiful' v4-window.xml
             grep -q 'Create a website' v4-window.xml
             grep -q 'Quick add' v4-window.xml
+
+            # Run instrumentation after the manual launch check. The V4 test uses
+            # UIAutomator rather than Espresso's focus-sensitive RootViewPicker.
+            ./gradlew --no-daemon connectedDebugAndroidTest --stacktrace
 
       - name: Upload emulator evidence
         if: always()
