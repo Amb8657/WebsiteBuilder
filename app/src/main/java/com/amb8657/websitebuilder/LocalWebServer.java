@@ -5,7 +5,7 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 
 /** Small offline phone-host for the MVP. It serves the current static site over the device LAN. */
-public class LocalWebServer {
+public class LocalWebServer implements AutoCloseable {
     private ServerSocket serverSocket;
     private Thread thread;
     private volatile boolean running;
@@ -44,14 +44,21 @@ public class LocalWebServer {
         } catch (IOException ignored) { }
     }
 
+    /** Idempotent lifecycle shutdown; call from the owning Activity's onStop/onDestroy. */
     public synchronized void stop() {
         running = false;
-        if (serverSocket != null) {
-            try { serverSocket.close(); } catch (IOException ignored) { }
-        }
+        ServerSocket socket = serverSocket;
         serverSocket = null;
+        if (socket != null) {
+            try { socket.close(); } catch (IOException ignored) { }
+        }
+        Thread t = thread;
         thread = null;
+        if (t != null && t != Thread.currentThread()) t.interrupt();
     }
+
+    /** AutoCloseable alias so Activity lifecycle cleanup can use try/finally or close(). */
+    @Override public void close() { stop(); }
 
     public boolean isRunning() { return running; }
     public int getPort() { return port; }
