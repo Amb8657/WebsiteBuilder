@@ -34,11 +34,11 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_2
-          cores: 2
-          ram-size: 2048M
+          cores: 4
+          ram-size: 3072M
           disk-size: 4096M
           force-avd-creation: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-metrics
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-metrics -no-snapshot
           disable-animations: true
           script: |
             set -e
@@ -47,13 +47,18 @@ jobs:
             adb logcat -c || true
             adb shell am force-stop com.amb8657.websitebuilder || true
             adb shell monkey -p com.amb8657.websitebuilder 1
-            sleep 5
 
-            # Confirm the canonical V4 activity is actually foreground.
+            # Wait for the real application process/activity rather than assuming a fixed startup delay.
+            for i in $(seq 1 20); do
+              if adb shell dumpsys activity activities 2>/dev/null | grep -q 'com.amb8657.websitebuilder/.WebsiteBuilderV4Activity'; then
+                break
+              fi
+              sleep 1
+            done
             adb shell dumpsys activity activities | grep -q 'com.amb8657.websitebuilder/.WebsiteBuilderV4Activity'
             adb exec-out screencap -p > v4-launch.png
 
-            # Capture the app's complete post-launch log instead of relying on a transient PID.
+            # Capture the complete post-launch log; do not depend on a transient PID.
             adb logcat -d > v4-logcat.txt
             if grep -qE 'FATAL EXCEPTION|Process: com\.amb8657\.websitebuilder' v4-logcat.txt; then
               echo 'WebsiteBuilder process crash detected:'
@@ -61,7 +66,7 @@ jobs:
               exit 1
             fi
 
-            # The V4 splash must hand off to the dashboard after its deliberate display time.
+            # Verify the splash has handed off to the actual V4 dashboard.
             adb shell uiautomator dump /sdcard/v4-window.xml >/dev/null
             adb shell cat /sdcard/v4-window.xml > v4-window.xml
             grep -q 'Build something beautiful' v4-window.xml
