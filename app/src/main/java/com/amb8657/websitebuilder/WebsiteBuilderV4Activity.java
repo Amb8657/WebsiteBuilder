@@ -41,6 +41,7 @@ public class WebsiteBuilderV4Activity extends BuilderV3Activity {
         content.setPadding(dp(18),dp(18),dp(18),dp(18));
         ImageView logo = new ImageView(this);
         logo.setImageResource(R.drawable.gmail);
+        logo.setContentDescription("Gmail branding");
         logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
         content.addView(logo,new LinearLayout.LayoutParams(dp(230),dp(230)));
         TextView title = heading("Website Builder",26);
@@ -61,6 +62,7 @@ public class WebsiteBuilderV4Activity extends BuilderV3Activity {
         top.setPadding(dp(18),dp(16),dp(18),dp(8));
         ImageView logo = new ImageView(this);
         logo.setImageResource(R.drawable.gmail);
+        logo.setContentDescription("Gmail branding");
         logo.setScaleType(ImageView.ScaleType.CENTER_CROP);
         top.addView(logo,new LinearLayout.LayoutParams(dp(44),dp(44)));
         LinearLayout brand = new LinearLayout(this);
