@@ -31,6 +31,11 @@ public class WebsiteBuilderV4Activity extends BuilderV3Activity {
         return b;
     }
 
+    @Override void picker(ColorDone done) {
+        int initial = selected == null ? Color.WHITE : selected.tc;
+        PhotoshopColorPickerDialog.show(this, initial, done::done);
+    }
+
     @Override void splash() {
         base();
         root.setGravity(Gravity.CENTER);
