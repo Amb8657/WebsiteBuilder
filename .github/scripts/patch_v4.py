@@ -1,0 +1,7 @@
+from pathlib import Path
+p=Path('app/src/main/java/com/amb8657/websitebuilder/WebsiteBuilderV4Activity.java')
+s=p.read_text()
+s=s.replace('if("Section".equals(type)){i.w=700;i.h=180;i.color=0xFFECEFF5;}if("Shape".equals(type)){i.w=240;i.h=140;i.color=0xFFECEFF5;}if("Button".equals(type))i.color=ACCENT;items.add(i);selected=i;render();','if("Section".equals(type)){i.w=700;i.h=180;i.color=0xFFECEFF5;}if("Shape".equals(type)){i.w=240;i.h=140;i.color=0xFFECEFF5;}if("Button".equals(type))i.color=ACCENT;if("Image".equals(type)){imageTarget=i;pickImage();return;}items.add(i);selected=i;render();')
+s=s.replace('void showInspector(){','Item imageTarget; void pickImage(){Intent q=new Intent(Intent.ACTION_OPEN_DOCUMENT);q.setType("image/*");q.addCategory(Intent.CATEGORY_OPENABLE);startActivityForResult(q,701);} @Override protected void onActivityResult(int r,int c,Intent d){super.onActivityResult(r,c,d);if(r==701&&c==RESULT_OK&&d!=null&&d.getData()!=null&&imageTarget!=null){imageTarget.uri=d.getData().toString();try{getContentResolver().takePersistableUriPermission(d.getData(),Intent.FLAG_GRANT_READ_URI_PERMISSION);}catch(Exception ignored){}items.add(imageTarget);selected=imageTarget;imageTarget=null;render();}}\n    void showInspector(){')
+s=s.replace('if("Image".equals(selected.type)){Button crop=b("Crop: "+selected.crop);','if("Image".equals(selected.type)){Button crop=b("Crop: "+selected.crop);')
+p.write_text(s)
