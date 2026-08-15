@@ -27,8 +27,11 @@ jobs:
       - name: Install required Android SDK packages
         run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
+      - name: Generate Gradle wrapper
+        run: gradle wrapper --gradle-version 8.7
+
       - name: Build debug APK
-        run: gradle --no-daemon clean assembleDebug --stacktrace
+        run: ./gradlew --no-daemon clean assembleDebug --stacktrace
 
       - name: Verify APK
         run: |
