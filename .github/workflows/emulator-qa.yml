@@ -22,15 +22,16 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-          cache: gradle
+
+      - name: Set up Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
         with:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0 emulator system-images;android-35;google_apis;x86_64'
-
-      - name: Generate Gradle wrapper
-        run: gradle wrapper --gradle-version 8.7
 
       - name: Run canonical V4 on accelerated Android Emulator
         uses: reactivecircus/android-emulator-runner@v2.38.0
@@ -51,10 +52,7 @@ jobs:
             set -euxo pipefail
             cd "$GITHUB_WORKSPACE"
 
-            # The community runner only invokes this script after the emulator
-            # reports that it is booted and ADB is connected. Do not poll ADB
-            # again here; that caused shell/ADB races in the previous run.
-            ./gradlew --no-daemon clean assembleDebug --stacktrace
+            gradle --no-daemon clean assembleDebug --stacktrace
 
             adb install -r app/build/outputs/apk/debug/app-debug.apk
             adb logcat -c || true
@@ -80,13 +78,11 @@ jobs:
             grep -q 'Create a website' v4-window.xml
             grep -q 'Quick add' v4-window.xml
 
-            # Run instrumentation after the manual launch check. The V4 test
-            # uses UIAutomator rather than Espresso's focus-sensitive picker.
-            ./gradlew --no-daemon connectedDebugAndroidTest --stacktrace
+            gradle --no-daemon connectedDebugAndroidTest --stacktrace
 
       - name: Upload emulator evidence
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: emulator-qa-evidence-${{ github.run_number }}
           path: |
