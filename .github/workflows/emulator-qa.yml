@@ -31,8 +31,14 @@ jobs:
         with:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0 emulator system-images;android-35;google_apis;x86_64'
 
-      - name: Run Batch 4 feature contract audit
+      - name: Select QA mode
+        run: bash "$GITHUB_WORKSPACE/.github/workflows/qa-mode.sh"
+
+      - name: Run Batch 1-4 cumulative contract audit
         run: bash "$GITHUB_WORKSPACE/.github/workflows/batch4-feature-audit.sh"
+
+      - name: Run Batch 5 cumulative contract audit
+        run: bash "$GITHUB_WORKSPACE/.github/workflows/batch5-feature-audit.sh"
 
       - name: Run app on Android Emulator
         uses: reactivecircus/android-emulator-runner@v2.38.0
@@ -51,6 +57,9 @@ jobs:
           pre-emulator-launch-script: adb start-server
           script: |
             bash "$GITHUB_WORKSPACE/.github/workflows/run-emulator-qa.sh"
+            if [[ "${QA_EMULATOR_MODE:-fast}" == "full" ]]; then
+              bash "$GITHUB_WORKSPACE/.github/workflows/run-full-emulator-regression.sh"
+            fi
 
       - name: Upload emulator evidence
         if: always()
@@ -62,4 +71,5 @@ jobs:
             v4-logcat.txt
             v4-window.xml
             activity-dump.txt
+            qa-artifacts/**
             app/build/outputs/**
