@@ -1,0 +1,13 @@
+name: Batch 5 Full Regression
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run cumulative Batch 5 audit
+        run: bash .github/workflows/batch5-feature-audit.sh
