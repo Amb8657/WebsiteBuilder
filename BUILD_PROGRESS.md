@@ -25,9 +25,14 @@ Current focus: unified Website Builder V3, approved Gmail branding, and a determ
 - [x] Shape-as-container foundation
 - [x] Deterministic V4 emulator launch verification
 - [x] Legacy source-patcher workflows removed
+- [x] V4 canvas movement clamped to canvas bounds
+- [x] V4 resize clamped to canvas bounds with 24dp minimum dimensions
+- [x] V4 manipulation prevents parent canvas scrolling during gestures
+- [x] V4 is the sole launcher activity in AndroidManifest
+- [x] Final APK build workflow moved to the proven macOS Intel runner
 - [ ] Final UI parity with the fully approved design
 - [ ] Final QA on a physical device
 - [ ] Final installable APK from the latest source commit
 
 ## Current verification note
-The latest CI red crosses included runner-allocation failures where GitHub executed zero job steps; those failures did not exercise the application. The V4 QA workflow has now been changed to use Activity Manager's `am start -W` rather than fragile sleep/poll loops, and the activity-component check uses the correct package name.
+The latest red crosses before the final refactor included GitHub runner-allocation failures where zero job steps executed. The latest source pass now hardens the actual V4 editor gesture path and makes the final APK build use the same macOS Intel runner family that successfully booted the community Android emulator. A new workflow run must still execute successfully before the latest-source APK can honestly be called final.
