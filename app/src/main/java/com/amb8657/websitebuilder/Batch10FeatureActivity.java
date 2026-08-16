@@ -1,7 +1,6 @@
 package com.amb8657.websitebuilder;
 
 import android.app.AlertDialog;
-import android.graphics.Color;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -26,29 +25,17 @@ public class Batch10FeatureActivity extends Batch9FeatureActivity {
         if (selected == null) { msg("Select an element first"); return false; }
         return true;
     }
-
     private void changed(String text) { save(); render(); msg(text); }
-
-    /** 1: full opacity. */
     private void opacity100() { if(!selectedOk())return; selected.opacity=1f; changed("Opacity 100%"); }
-    /** 2: 75% opacity. */
     private void opacity75() { if(!selectedOk())return; selected.opacity=.75f; changed("Opacity 75%"); }
-    /** 3: 50% opacity. */
     private void opacity50() { if(!selectedOk())return; selected.opacity=.50f; changed("Opacity 50%"); }
-    /** 4: square corners. */
     private void radius0() { if(!selectedOk())return; selected.radius=0f; changed("Corner radius 0dp"); }
-    /** 5: medium rounded corners. */
     private void radius12() { if(!selectedOk())return; selected.radius=d(12); changed("Corner radius 12dp"); }
-    /** 6: large rounded corners. */
     private void radius24() { if(!selectedOk())return; selected.radius=d(24); changed("Corner radius 24dp"); }
-    /** 7: increase text size by 2sp, clamped to a readable range. */
     private void fontUp() { if(!selectedOk())return; selected.font=Math.min(96,selected.font+2); changed("Font size +2sp"); }
-    /** 8: decrease text size by 2sp, clamped to a readable range. */
     private void fontDown() { if(!selectedOk())return; selected.font=Math.max(8,selected.font-2); changed("Font size -2sp"); }
-    /** 9: switch the existing fill model between solid and outline. */
     private void toggleFill() { if(!selectedOk())return; selected.fill="solid".equalsIgnoreCase(selected.fill)?"outline":"solid"; changed("Fill: "+selected.fill); }
-    /** 10: reset the selected element's visual style to the V4 defaults. */
-    private void resetStyle() { if(!selectedOk())return; selected.opacity=1f;selected.radius=0f;selected.fill="solid";selected.font=Math.max(8,selected.font);changed("Style reset"); }
+    private void resetStyle() { if(!selectedOk())return; selected.opacity=1f;selected.radius=0f;selected.fill="solid";selected.font=18;changed("Style reset"); }
 
     private void styleMenu() {
         String[] items={"Opacity 100%","Opacity 75%","Opacity 50%","Corner radius 0dp","Corner radius 12dp","Corner radius 24dp","Font size +2sp","Font size -2sp","Toggle solid / outline","Reset visual style"};
