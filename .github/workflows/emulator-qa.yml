@@ -61,16 +61,10 @@ jobs:
             adb shell dumpsys activity activities > activity-dump.txt
             adb exec-out screencap -p > v4-launch.png
             adb logcat -d -v threadtime > v4-logcat.txt
-            echo '--- WEBSITE BUILDER LOGS ---'
-            grep -E -C 15 'FATAL EXCEPTION|AndroidRuntime|Process: com\.amb8657\.websitebuilder|com\.amb8657\.websitebuilder' v4-logcat.txt || true
-            if grep -qE 'FATAL EXCEPTION|Process: com\.amb8657\.websitebuilder' v4-logcat.txt; then
-              echo 'WebsiteBuilder crash detected'
-              exit 1
-            fi
-            if ! adb shell pidof com.amb8657.websitebuilder >/dev/null; then
-              echo 'WebsiteBuilder process is not running after launch'
-              exit 1
-            fi
+            echo '--- WEBSITE BUILDER CRASH CHECK ---'
+            grep -E -C 15 'FATAL EXCEPTION|AndroidRuntime|Process: com\.amb8657\.websitebuilder' v4-logcat.txt || true
+            ! grep -qE 'FATAL EXCEPTION|Process: com\.amb8657\.websitebuilder' v4-logcat.txt
+            adb shell pidof com.amb8657.websitebuilder >/dev/null
             adb shell uiautomator dump /sdcard/v4-window.xml >/dev/null
             adb shell cat /sdcard/v4-window.xml > v4-window.xml
             grep -q 'Build something beautiful' v4-window.xml
