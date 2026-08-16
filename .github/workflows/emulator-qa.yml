@@ -31,6 +31,9 @@ jobs:
         with:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0 emulator system-images;android-35;google_apis;x86_64'
 
+      - name: Run Batch 4 feature contract audit
+        run: bash "$GITHUB_WORKSPACE/.github/workflows/batch4-feature-audit.sh"
+
       - name: Run app on Android Emulator
         uses: reactivecircus/android-emulator-runner@v2.38.0
         with:
