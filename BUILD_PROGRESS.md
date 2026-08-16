@@ -1,6 +1,6 @@
 # Build Progress — Master 10-at-a-time plan
 
-## Current batch under verification: 8
+## Current batch under verification: 9
 
 ## QA policy
 Every batch gets full automated/source-contract regression for all completed batches plus a focused emulator run for the new batch and a critical-path smoke regression for the existing app. Every fifth batch (5, 10, 15, 20, ...) additionally runs the longer emulator lifecycle/persistence regression. A full-project emulator regression remains mandatory before the final APK. GitHub Actions uses concurrency cancellation for the emulator gate so stale queued emulator runs do not compete with the newest commit.
@@ -92,19 +92,31 @@ Implement features in batches of 10. Each batch must be coded and verified befor
 - [x] Local project backup
 - [x] Local project restore
 
-## Batch 8 — implemented, verification running
-- [ ] Align left
-- [ ] Center horizontally
-- [ ] Align right
-- [ ] Align top
-- [ ] Center vertically
-- [ ] Align bottom
-- [ ] Snap to 8dp grid
-- [ ] Bring element to front
-- [ ] Send element to back
-- [ ] Canvas zoom in/out/reset
+## Batch 8 — completed and emulator verified
+- [x] Align left
+- [x] Center horizontally
+- [x] Align right
+- [x] Align top
+- [x] Center vertically
+- [x] Align bottom
+- [x] Snap to 8dp grid
+- [x] Bring element to front
+- [x] Send element to back
+- [x] Canvas zoom in/out/reset
 
-## Batches 9–20
+## Batch 9 — implemented, verification running
+- [ ] Multi-selection entry point
+- [ ] Distribute elements horizontally
+- [ ] Distribute elements vertically
+- [ ] Match selected widths
+- [ ] Match selected heights
+- [ ] Align selected elements to first X
+- [ ] Align selected elements to first Y
+- [ ] Nudge selected elements left
+- [ ] Nudge selected elements right
+- [ ] Nudge selected elements down
+
+## Batches 10–20
 Each batch will contain exactly 10 additional features selected from the approved Master Specification, implemented and verified sequentially. If the master specification grows beyond 200 features, continue with additional 10-feature batches.
 
 ## Final QA gate
