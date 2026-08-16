@@ -53,6 +53,9 @@ jobs:
       - name: Run Batch 8 cumulative contract audit
         run: bash "$GITHUB_WORKSPACE/.github/workflows/batch8-feature-audit.sh"
 
+      - name: Run Batch 9 cumulative contract audit
+        run: bash "$GITHUB_WORKSPACE/.github/workflows/batch9-feature-audit.sh"
+
       - name: Run app on Android Emulator
         uses: reactivecircus/android-emulator-runner@v2.38.0
         with:
