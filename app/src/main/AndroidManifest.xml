@@ -7,10 +7,5 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".BuilderV3Activity" android:screenOrientation="portrait" android:exported="false" />
-        <activity android:name=".BuilderV2Activity" android:screenOrientation="portrait" android:exported="false" />
-        <activity android:name=".ModularEditorActivity" android:screenOrientation="portrait" android:exported="false" />
-        <activity android:name=".VisualBuilderActivity" android:screenOrientation="portrait" android:exported="false" />
-        <activity android:name=".MainActivity" android:screenOrientation="portrait" android:exported="false" />
     </application>
 </manifest>
