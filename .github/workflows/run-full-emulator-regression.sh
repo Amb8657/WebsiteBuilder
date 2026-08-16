@@ -9,10 +9,11 @@ PASS_COUNT=0
 fail(){ echo "[FULL-FAIL] $1"; FAILURES+=("$1"); RESULT=1; }
 pass(){ echo "[FULL-PASS] $1"; PASS_COUNT=$((PASS_COUNT+1)); }
 
-# The fast smoke already proved build/install/launch/crash-free operation. This milestone gate
-# exercises the expensive critical lifecycle path again: relaunch, persistence bridge startup,
-# foreground activity, and a clean second restart.
+# The fast smoke already proves build/install/launch/crash-free operation. This milestone gate
+# exercises the expensive lifecycle path again. Each cycle clears logcat before launch so
+# historical messages from previous tests cannot produce false crash failures.
 for cycle in 1 2; do
+  adb logcat -c >/dev/null 2>&1 || true
   adb shell am force-stop "$PACKAGE" >/dev/null 2>&1 || true
   if adb shell am start -n "$ACTIVITY" >/dev/null 2>&1; then pass "cycle $cycle launch"; else fail "cycle $cycle launch"; fi
   alive=0
