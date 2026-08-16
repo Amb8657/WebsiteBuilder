@@ -1,0 +1,102 @@
+name: Apply Batch 4
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply Batch 4 implementation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('app/src/main/java/com/amb8657/websitebuilder/BuilderV3Activity.java')
+          s=p.read_text()
+          if 'BATCH4_IMPLEMENTED' in s:
+              print('Batch 4 already applied')
+              raise SystemExit(0)
+          old='int id,parent=0,x=24,y=24,w=300,h=80,bg=Color.TRANSPARENT,bg2=Color.WHITE,tc=Color.DKGRAY,font=18;'
+          new=old+' String name=""; boolean locked=false,hidden=false;'
+          assert old in s
+          s=s.replace(old,new,1)
+          old='x.crop=o.optBoolean("crop",false);x.animation=o.optString("animation","None");q.blocks.add(x);'
+          new='x.crop=o.optBoolean("crop",false);x.animation=o.optString("animation","None");x.name=o.optString("name","");x.locked=o.optBoolean("locked",false);x.hidden=o.optBoolean("hidden",false);q.blocks.add(x);'
+          assert old in s
+          s=s.replace(old,new,1)
+          old='o.put("fill",b.fill).put("crop",b.crop).put("animation",b.animation);bs.put(o);'
+          new='o.put("fill",b.fill).put("crop",b.crop).put("animation",b.animation).put("name",b.name).put("locked",b.locked).put("hidden",b.hidden);bs.put(o);'
+          assert old in s
+          s=s.replace(old,new,1)
+          marker='    void pageTarget(Block b){'
+          methods=r'''    // BATCH4_IMPLEMENTED: real duplicate/copy/undo/redo/group/lock/hide/layers/rename controls.
+    final java.util.ArrayDeque<String> batch4Undo=new java.util.ArrayDeque<>(), batch4Redo=new java.util.ArrayDeque<>();
+    Block batch4Clipboard;
+    String batch4State(){save();return sp.getString("data","");}
+    void batch4Begin(){batch4Undo.push(batch4State());batch4Redo.clear();}
+    void batch4Restore(String raw){if(raw==null||raw.isEmpty())return;sp.edit().putString("data",raw).apply();String oldProject=project==null?null:project.name;String oldPage=page==null?null:page.name;load();if(oldProject!=null)for(Project q:projects)if(oldProject.equals(q.name)){project=q;break;}if(project==null&&!projects.isEmpty())project=projects.get(0);if(project!=null){page=project.pages.get(0);if(oldPage!=null)for(Page q:project.pages)if(oldPage.equals(q.name)){page=q;break;}}selected=null;editor();}
+    void batch4Undo(){if(batch4Undo.isEmpty()){Toast.makeText(this,"Nothing to undo",Toast.LENGTH_SHORT).show();return;}String cur=batch4State();batch4Redo.push(cur);batch4Restore(batch4Undo.pop());}
+    void batch4Redo(){if(batch4Redo.isEmpty()){Toast.makeText(this,"Nothing to redo",Toast.LENGTH_SHORT).show();return;}String cur=batch4State();batch4Undo.push(cur);batch4Restore(batch4Redo.pop());}
+    Block batch4Clone(Block b){Block n=new Block(nextId++,b.type,b.text);n.parent=b.parent;n.x=b.x;n.y=b.y;n.w=b.w;n.h=b.h;n.bg=b.bg;n.bg2=b.bg2;n.tc=b.tc;n.font=b.font;n.opacity=b.opacity;n.radius=b.radius;n.uri=b.uri;n.action=b.action;n.target=b.target;n.fill=b.fill;n.crop=b.crop;n.animation=b.animation;n.name=b.name;n.locked=b.locked;n.hidden=b.hidden;return n;}
+    void batch4Duplicate(){if(selected==null){Toast.makeText(this,"Select an element",Toast.LENGTH_SHORT).show();return;}if(selected.locked)return;batch4Begin();Block n=batch4Clone(selected);n.x+=24;n.y+=24;page.blocks.add(n);selected=n;save();render();}
+    void batch4Copy(){if(selected==null){Toast.makeText(this,"Select an element",Toast.LENGTH_SHORT).show();return;}batch4Clipboard=batch4Clone(selected);Toast.makeText(this,"Copied",Toast.LENGTH_SHORT).show();}
+    void batch4Paste(){if(batch4Clipboard==null){Toast.makeText(this,"Nothing copied",Toast.LENGTH_SHORT).show();return;}batch4Begin();Block n=batch4Clone(batch4Clipboard);n.id=nextId++;n.parent=0;n.x+=32;n.y+=32;page.blocks.add(n);selected=n;save();render();}
+    void batch4ToggleLock(){if(selected==null)return;batch4Begin();selected.locked=!selected.locked;save();render();}
+    void batch4ToggleHide(){if(selected==null)return;batch4Begin();selected.hidden=!selected.hidden;save();render();}
+    void batch4Rename(){if(selected==null)return;EditText e=edit("Element name",selected.name.isEmpty()?selected.type:selected.name);new AlertDialog.Builder(this).setTitle("Rename element").setView(e).setNegativeButton("Cancel",null).setPositiveButton("Save",(d,w)->{batch4Begin();selected.name=e.getText().toString().trim();save();render();}).show();}
+    void batch4Group(){final ArrayList<Block> roots=new ArrayList<>();for(Block b:page.blocks)if(b.parent==0&&!(b.type.equals("Group")))roots.add(b);if(roots.size()<2){Toast.makeText(this,"Add at least two elements first",Toast.LENGTH_SHORT).show();return;}String[] labels=new String[roots.size()];boolean[] checked=new boolean[roots.size()];for(int i=0;i<roots.size();i++){labels[i]=roots.get(i).name.isEmpty()?roots.get(i).type+" #"+roots.get(i).id:roots.get(i).name;checked[i]=roots.get(i)==selected;}new AlertDialog.Builder(this).setTitle("Select elements to group").setMultiChoiceItems(labels,checked,(d,w,c)->checked[w]=c).setNegativeButton("Cancel",null).setPositiveButton("Group",(d,w)->{ArrayList<Block> chosen=new ArrayList<>();for(int i=0;i<roots.size();i++)if(checked[i])chosen.add(roots.get(i));if(chosen.size()<2)return;batch4Begin();int minX=Integer.MAX_VALUE,minY=Integer.MAX_VALUE,maxX=0,maxY=0;for(Block b:chosen){minX=Math.min(minX,b.x);minY=Math.min(minY,b.y);maxX=Math.max(maxX,b.x+b.w);maxY=Math.max(maxY,b.y+b.h);}Block g=new Block(nextId++,"Group","");g.name="Group";g.x=minX;g.y=minY;g.w=Math.max(MIN_W,maxX-minX);g.h=Math.max(MIN_H,maxY-minY);page.blocks.add(0,g);for(Block b:chosen){b.parent=g.id;b.x-=minX;b.y-=minY;}selected=g;save();render();}).show();}
+    void batch4Ungroup(){if(selected==null||!"Group".equals(selected.type)){Toast.makeText(this,"Select a group",Toast.LENGTH_SHORT).show();return;}batch4Begin();int gx=selected.x,gy=selected.y;int gid=selected.id;for(Block b:page.blocks)if(b.parent==gid){b.x+=gx;b.y+=gy;b.parent=0;}page.blocks.remove(selected);selected=null;save();render();}
+    void batch4Layers(){final ArrayList<Block> roots=new ArrayList<>();for(Block b:page.blocks)if(b.parent==0)roots.add(b);String[] labels=new String[roots.size()];for(int i=0;i<roots.size();i++)labels[i]=(roots.get(i).hidden?"◌ ":"")+ (roots.get(i).locked?"🔒 ":"") +(roots.get(i).name.isEmpty()?roots.get(i).type+" #"+roots.get(i).id:roots.get(i).name);new AlertDialog.Builder(this).setTitle("Layers").setItems(labels,(d,w)->{selected=roots.get(w);batch4LayerActions(roots.get(w));}).setNegativeButton("Close",null).show();}
+    void batch4LayerActions(Block b){String[] a={"Select","Move up","Move down","Rename","Duplicate","Copy","Lock/Unlock","Hide/Show","Group","Ungroup"};new AlertDialog.Builder(this).setTitle(b.name.isEmpty()?b.type:b.name).setItems(a,(d,w)->{if(w==0){selected=b;render();}else if(w==1||w==2){batch4Begin();int i=page.blocks.indexOf(b),j=w==1?i+1:i-1;if(j>=0&&j<page.blocks.size()){Block x=page.blocks.remove(i);page.blocks.add(j,x);}save();render();}else if(w==3)batch4Rename();else if(w==4)batch4Duplicate();else if(w==5)batch4Copy();else if(w==6)batch4ToggleLock();else if(w==7)batch4ToggleHide();else if(w==8)batch4Group();else batch4Ungroup();}).show();}
+'''
+          assert marker in s
+          s=s.replace(marker,methods+marker,1)
+          p.write_text(s)
+
+          p=Path('app/src/main/java/com/amb8657/websitebuilder/WebsiteBuilderV4Activity.java')
+          s=p.read_text()
+          if 'batch4Tools' not in s:
+              old='Button preview=pill("Preview"); preview.setBackground(gd(CanvaDesignSystem.ACCENT,10)); toolbar.addView(preview,new LinearLayout.LayoutParams(dp(82),dp(44))); preview.setOnClickListener(v->preview());'
+              new='Button preview=pill("Preview"); preview.setBackground(gd(CanvaDesignSystem.ACCENT,10)); toolbar.addView(preview,new LinearLayout.LayoutParams(dp(82),dp(44))); preview.setOnClickListener(v->preview()); Button batch4Tools=pill("Edit"); toolbar.addView(batch4Tools,new LinearLayout.LayoutParams(dp(62),dp(44))); batch4Tools.setOnClickListener(v->batch4Menu());'
+              assert old in s
+              s=s.replace(old,new,1)
+              marker='    @Override boolean move(View v, MotionEvent e, Block b) {'
+              methods='''    void batch4Menu(){String[] a={"Duplicate","Copy","Paste","Undo","Redo","Group","Ungroup","Lock/Unlock","Hide/Show","Layers","Rename"};new android.app.AlertDialog.Builder(this).setTitle("Edit").setItems(a,(d,w)->{if(w==0)batch4Duplicate();else if(w==1)batch4Copy();else if(w==2)batch4Paste();else if(w==3)batch4Undo();else if(w==4)batch4Redo();else if(w==5)batch4Group();else if(w==6)batch4Ungroup();else if(w==7)batch4ToggleLock();else if(w==8)batch4ToggleHide();else if(w==9)batch4Layers();else batch4Rename();}).show();}\n\n'''
+              assert marker in s
+              s=s.replace(marker,methods+marker,1)
+              old='''        if (e.getAction() == MotionEvent.ACTION_DOWN) {\n            v.getParent().requestDisallowInterceptTouchEvent(true);'''
+              new='''        if (e.getAction() == MotionEvent.ACTION_DOWN) {\n            if (b.locked) { Toast.makeText(this,"Element is locked",Toast.LENGTH_SHORT).show(); selected=b; render(); return true; }\n            v.getParent().requestDisallowInterceptTouchEvent(true);'''
+              assert old in s
+              s=s.replace(old,new,1)
+              old='''    @Override boolean resize(MotionEvent e, View v, Block b, int gravity) {\n        if (e.getAction() == MotionEvent.ACTION_DOWN) {'''
+              new='''    @Override boolean resize(MotionEvent e, View v, Block b, int gravity) {\n        if (e.getAction() == MotionEvent.ACTION_DOWN) {\n            if (b.locked) { Toast.makeText(this,"Element is locked",Toast.LENGTH_SHORT).show(); return true; }'''
+              assert old in s
+              s=s.replace(old,new,1)
+              p.write_text(s)
+
+          p=Path('app/src/main/java/com/amb8657/websitebuilder/BuilderV3Activity.java')
+          s=p.read_text()
+          old='''    void draw(FrameLayout parent,Block b,int ox,int oy){FrameLayout h=new FrameLayout(this);'''
+          new='''    void draw(FrameLayout parent,Block b,int ox,int oy){if(b.hidden)return;FrameLayout h=new FrameLayout(this);'''
+          assert old in s
+          s=s.replace(old,new,1)
+          old='''    void previewBlock(FrameLayout p,Block b,int ox,int oy,Dialog d){View v;'''
+          new='''    void previewBlock(FrameLayout p,Block b,int ox,int oy,Dialog d){if(b.hidden)return;View v;'''
+          assert old in s
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+          git config user.name "WebsiteBuilder Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add app/src/main/java/com/amb8657/websitebuilder/BuilderV3Activity.java app/src/main/java/com/amb8657/websitebuilder/WebsiteBuilderV4Activity.java
+          git commit -m "feat: implement batch 4 core editor controls" || true
+          git push
+      - name: Remove one-shot workflow
+        if: success()
+        run: |
+          git rm .github/workflows/apply-batch4.yml || true
+          git commit -m "chore: remove batch 4 one-shot workflow" || true
+          git push || true
