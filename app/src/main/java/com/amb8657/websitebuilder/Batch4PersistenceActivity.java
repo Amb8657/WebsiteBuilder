@@ -7,10 +7,9 @@ import org.json.JSONObject;
 
 /**
  * Keeps Batch 4 metadata inside the canonical builder_v3 document envelope.
- * The existing enhanced editor remains the UI/behavior layer; this bridge makes
- * lock/hidden/name state survive save/reopen without replacing the working V4 engine.
+ * Batch 5 extends this proven layer without replacing the V4 editor engine.
  */
-public class Batch4PersistenceActivity extends EnhancedWebsiteBuilderV4Activity {
+public class Batch4PersistenceActivity extends Batch5FeatureActivity {
     private static final String DATA = "builder_v3";
     private static final String META = "batch4Meta";
 
@@ -70,7 +69,6 @@ public class Batch4PersistenceActivity extends EnhancedWebsiteBuilderV4Activity 
             JSONObject meta = new JSONObject(raw).optJSONObject(META);
             if (meta == null) return;
             SharedPreferences.Editor e = prefs().edit();
-            JSONArray allPages = new JSONArray();
             if (project != null) {
                 for (Page p : project.pages) for (Block b : p.blocks) {
                     JSONObject m = meta.optJSONObject(String.valueOf(b.id));
