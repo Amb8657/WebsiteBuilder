@@ -2,6 +2,8 @@
 set -uo pipefail
 cd "${GITHUB_WORKSPACE:-$(pwd)}"
 
+PACKAGE="com.amb8657.websitebuilder"
+ACTIVITY="${PACKAGE}/.EnhancedWebsiteBuilderV4Activity"
 RESULT=0
 FAILURES=()
 PASS_COUNT=0
@@ -12,21 +14,19 @@ run_check() { local name="$1"; shift; if "$@"; then pass "$name"; else fail "$na
 mkdir -p qa-artifacts
 : > qa-artifacts/qa-summary.txt
 
-# Always collect diagnostics; never let one failed check prevent later checks.
 collect_diagnostics() {
   adb logcat -d -v threadtime > qa-artifacts/logcat.txt 2>&1 || true
   adb shell dumpsys activity activities > qa-artifacts/activity-dump.txt 2>&1 || true
   adb shell dumpsys window windows > qa-artifacts/window-dump.txt 2>&1 || true
-  adb shell pidof com.amb8657.websitebuilder > qa-artifacts/pid.txt 2>&1 || true
+  adb shell pidof "$PACKAGE" > qa-artifacts/pid.txt 2>&1 || true
   adb shell uiautomator dump /sdcard/v4-window.xml >/dev/null 2>&1 || true
   adb exec-out cat /sdcard/v4-window.xml > qa-artifacts/v4-window.xml 2>/dev/null || true
   adb exec-out screencap -p > qa-artifacts/emulator-final.png 2>/dev/null || true
 }
 
-BUILD_OK=0
 APK="app/build/outputs/apk/debug/app-debug.apk"
 echo '--- BUILD ---'
-if gradle --no-daemon clean assembleDebug --stacktrace > qa-artifacts/build.log 2>&1; then BUILD_OK=1; pass 'Android build'; else fail 'Android build'; fi
+if gradle --no-daemon clean assembleDebug --stacktrace > qa-artifacts/build.log 2>&1; then pass 'Android build'; else fail 'Android build'; fi
 
 if [[ -f "$APK" ]]; then pass 'APK exists'; else fail 'APK exists'; fi
 
@@ -49,12 +49,12 @@ else
 fi
 
 adb logcat -c >/dev/null 2>&1 || true
-adb shell am force-stop com.amb8657.websitebuilder >/dev/null 2>&1 || true
-adb shell am start -n com.amb8657.websitebuilder/.WebsiteBuilderV4Activity > qa-artifacts/launch.log 2>&1 || fail 'Activity launch command'
+adb shell am force-stop "$PACKAGE" >/dev/null 2>&1 || true
+if adb shell am start -n "$ACTIVITY" > qa-artifacts/launch.log 2>&1; then pass 'Activity launch command'; else fail 'Activity launch command'; fi
 
 process_ok=0
 for i in $(seq 1 30); do
-  if adb shell pidof com.amb8657.websitebuilder >/dev/null 2>&1; then process_ok=1; break; fi
+  if adb shell pidof "$PACKAGE" >/dev/null 2>&1; then process_ok=1; break; fi
   sleep 2
 done
 [[ "$process_ok" == "1" ]] && pass 'WebsiteBuilder process alive' || fail 'WebsiteBuilder process alive'
@@ -62,10 +62,10 @@ done
 activity_ok=0
 for i in $(seq 1 30); do
   adb shell dumpsys activity activities > qa-artifacts/activity-dump-live.txt 2>&1 || true
-  if grep -q 'com\.amb8657\.websitebuilder/.WebsiteBuilderV4Activity' qa-artifacts/activity-dump-live.txt; then activity_ok=1; break; fi
+  if grep -q "$ACTIVITY" qa-artifacts/activity-dump-live.txt; then activity_ok=1; break; fi
   sleep 2
 done
-[[ "$activity_ok" == "1" ]] && pass 'WebsiteBuilder activity foreground' || fail 'WebsiteBuilder activity foreground'
+[[ "$activity_ok" == "1" ]] && pass 'Enhanced WebsiteBuilder activity foreground' || fail 'Enhanced WebsiteBuilder activity foreground'
 
 sleep 3
 collect_diagnostics
@@ -79,13 +79,14 @@ else
   pass 'No WebsiteBuilder fatal crash'
 fi
 
-if grep -q 'com\.amb8657\.websitebuilder/.WebsiteBuilderV4Activity' qa-artifacts/activity-dump.txt 2>/dev/null; then pass 'Activity remains active'; else fail 'Activity remains active'; fi
+if grep -q "$ACTIVITY" qa-artifacts/activity-dump.txt 2>/dev/null; then pass 'Enhanced activity remains active'; else fail 'Enhanced activity remains active'; fi
 
-if adb shell pidof com.amb8657.websitebuilder >/dev/null 2>&1; then pass 'Process remains alive at final check'; else fail 'Process remains alive at final check'; fi
+if adb shell pidof "$PACKAGE" >/dev/null 2>&1; then pass 'Process remains alive at final check'; else fail 'Process remains alive at final check'; fi
 
-# Write a complete summary even when failures exist.
 {
   echo "WebsiteBuilder emulator QA summary"
+  echo "PACKAGE=$PACKAGE"
+  echo "ACTIVITY=$ACTIVITY"
   echo "PASS_COUNT=$PASS_COUNT"
   echo "FAIL_COUNT=${#FAILURES[@]}"
   if ((${#FAILURES[@]})); then
@@ -96,7 +97,6 @@ if adb shell pidof com.amb8657.websitebuilder >/dev/null 2>&1; then pass 'Proces
   fi
 } | tee qa-artifacts/qa-summary.txt
 
-# Print useful crash information without aborting earlier checks.
 if ((${#FAILURES[@]})); then
   echo '--- FAILURE DIAGNOSTICS ---'
   grep -E -C 12 'FATAL EXCEPTION|AndroidRuntime|Process: com\.amb8657\.websitebuilder' qa-artifacts/logcat.txt || true
