@@ -6,6 +6,7 @@ pass(){ echo "[BATCH9-PASS] $1"; PASS=$((PASS+1)); }
 fail(){ echo "[BATCH9-FAIL] $1"; FAIL=$((FAIL+1)); }
 FILE="app/src/main/java/com/amb8657/websitebuilder/Batch9FeatureActivity.java"
 LAUNCH="app/src/main/java/com/amb8657/websitebuilder/Batch4PersistenceActivity.java"
+CHAIN="app/src/main/java/com/amb8657/websitebuilder/Batch10FeatureActivity.java"
 for item in \
   'multi-selection:chooseBlocks' \
   'horizontal distribution:distributeHorizontal' \
@@ -20,7 +21,11 @@ for item in \
   label="${item%%:*}"; symbol="${item#*:}"
   grep -q "$symbol" "$FILE" && pass "$label" || fail "$label"
 done
-grep -q 'extends Batch9FeatureActivity' "$LAUNCH" && pass 'canonical launcher includes Batch 9' || fail 'canonical launcher includes Batch 9'
+if grep -q 'extends Batch10FeatureActivity' "$LAUNCH" && grep -q 'extends Batch9FeatureActivity' "$CHAIN"; then
+  pass 'canonical launcher includes Batch 9 through Batch 10 chain'
+else
+  fail 'canonical launcher includes Batch 9 through Batch 10 chain'
+fi
 grep -q 'Batch 8' BUILD_PROGRESS.md && pass 'cumulative progress retained' || fail 'cumulative progress retained'
 echo "BATCH9_PASS=$PASS"
 echo "BATCH9_FAIL=$FAIL"
