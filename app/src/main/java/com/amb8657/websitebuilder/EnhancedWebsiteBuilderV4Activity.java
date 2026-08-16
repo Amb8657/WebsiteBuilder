@@ -31,6 +31,15 @@ public class EnhancedWebsiteBuilderV4Activity extends WebsiteBuilderV4Activity {
         super.onCreate(b);
     }
 
+    /** Local toolbar button helper; the V4 parent keeps its equivalent private. */
+    private Button pill(String text) {
+        Button b = btn(text);
+        b.setTextColor(CanvaDesignSystem.TEXT);
+        b.setBackground(gd(CanvaDesignSystem.PANEL_2, 10));
+        b.setPadding(dp(10), 0, dp(10), 0);
+        return b;
+    }
+
     @Override void editor() {
         super.editor();
         Button edit = pill("Edit");
@@ -101,8 +110,7 @@ public class EnhancedWebsiteBuilderV4Activity extends WebsiteBuilderV4Activity {
     private void toggleLock(){ if(selected==null){ToastMsg("Select an element first");return;} pushUndo();setFlag(selected,"locked",!flag(selected,"locked"));save();render(); }
     private void toggleHide(){ if(selected==null){ToastMsg("Select an element first");return;} pushUndo();setFlag(selected,"hidden",!flag(selected,"hidden"));if(flag(selected,"hidden"))selected=null;save();render(); }
 
-    private void rename(){ if(selected==null){ToastMsg("Select an element first");return;} final android.widget.EditText e=edit("Element name",name(selected)); new AlertDialog.Builder(this).setTitle("Rename element").setView(e).setNegativeButton("Cancel",null).setPositiveButton("Save",(d,w)->{pushUndo();setName(selected,e.getText().toString().trim().isEmpty()?selected.type:nameValue(e.getText().toString().trim()));save();render();}).show(); }
-    private String nameValue(String s){return s;}
+    private void rename(){ if(selected==null){ToastMsg("Select an element first");return;} final android.widget.EditText e=edit("Element name",name(selected)); new AlertDialog.Builder(this).setTitle("Rename element").setView(e).setNegativeButton("Cancel",null).setPositiveButton("Save",(d,w)->{pushUndo();setName(selected,e.getText().toString().trim().isEmpty()?selected.type:e.getText().toString().trim());save();render();}).show(); }
 
     private void group(){
         if(selected==null){ToastMsg("Select an element first");return;}
