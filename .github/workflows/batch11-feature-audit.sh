@@ -18,6 +18,7 @@ check 'Move page right' grep -q 'private void movePageRight' "$file"
 check 'Page background' grep -q 'private void pageBackground' "$file"
 check 'Set Home page' grep -q 'private void setHomePage' "$file"
 check 'Navigation preview' grep -q 'private void pagePreview' "$file"
+check 'Mobile navigation preview' grep -q 'private void mobileNavigationPreview' "$file"
 check 'Site structure menu' grep -q 'siteMenu' "$file"
 if [[ "$fail" -ne 0 ]]; then exit 1; fi
-echo 'BATCH11_AUDIT_GREEN'
+echo 'BATCH11_AUDIT_GREEN: 14/14 checks passed'
