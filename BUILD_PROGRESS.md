@@ -1,6 +1,6 @@
 # Build Progress — Master 10-at-a-time plan
 
-## Current batch under verification: 5
+## Current batch under verification: 6
 
 ## QA policy
 Every batch gets full automated/source-contract regression for all completed batches plus a focused emulator run for the new batch and a critical-path smoke regression for the existing app. Every fifth batch (5, 10, 15, 20, ...) additionally runs the longer emulator lifecycle/persistence regression. A full-project emulator regression remains mandatory before the final APK.
@@ -56,19 +56,31 @@ Implement features in batches of 10. Each batch must be coded and verified befor
 - [x] Layers panel/reordering
 - [x] Element rename
 
-## Batch 5 — current implementation/verification
-- [ ] Final Builder V3 UI parity
-- [ ] Fully contextual property panel
-- [ ] Text free X/Y movement and robust selection behavior
-- [ ] Text independent resize with font auto-scaling
-- [ ] Image property panel and selected-image preview
-- [ ] Explicit image crop mode separate from resize
-- [ ] Button styling/action controls and preview behavior
-- [ ] Button deletion dependency warning/cleanup
-- [ ] Section/container hierarchy behavior
-- [ ] Shape visual-container behavior
+## Batch 5 — completed and verified
+- [x] Final Builder V3 UI parity layer
+- [x] Fully contextual property panel
+- [x] Text free X/Y movement and robust selection behavior
+- [x] Text independent resize with font auto-scaling
+- [x] Image property panel and selected-image preview
+- [x] Explicit image crop mode separate from resize
+- [x] Button styling/action controls and preview behavior
+- [x] Button deletion dependency warning/cleanup
+- [x] Section/container hierarchy behavior
+- [x] Shape visual-container behavior
 
-## Batches 6–20
+## Batch 6 — responsive preview and project tools
+- [ ] Mobile responsive preview mode
+- [ ] Tablet responsive preview mode
+- [ ] Desktop responsive preview mode
+- [ ] All-device preview summary
+- [ ] Dedicated Preview & Testing panel
+- [ ] Explicit autosave toggle
+- [ ] About Project information panel
+- [ ] Active/inactive project status
+- [ ] Performance warning scan
+- [ ] Fullscreen/native preview entry
+
+## Batches 7–20
 Each batch will contain exactly 10 additional features selected from the approved Master Specification, implemented and verified sequentially. If the master specification grows beyond 200 features, continue with additional 10-feature batches.
 
 ## Final QA gate
