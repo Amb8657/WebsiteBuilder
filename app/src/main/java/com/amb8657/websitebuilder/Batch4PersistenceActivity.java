@@ -6,9 +6,9 @@ import org.json.JSONObject;
 
 /**
  * Keeps Batch 4 metadata inside the canonical builder_v3 document envelope.
- * Batch 5, Batch 6 and Batch 7 extend this proven layer without replacing the V4 editor engine.
+ * Batch 5, Batch 6, Batch 7 and Batch 8 extend this proven layer without replacing the V4 editor engine.
  */
-public class Batch4PersistenceActivity extends Batch7FeatureActivity {
+public class Batch4PersistenceActivity extends Batch8FeatureActivity {
     private static final String DATA = "builder_v3";
     private static final String META = "batch4Meta";
 
