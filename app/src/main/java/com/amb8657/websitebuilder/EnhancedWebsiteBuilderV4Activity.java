@@ -29,6 +29,7 @@ public class EnhancedWebsiteBuilderV4Activity extends WebsiteBuilderV4Activity {
     @Override public void onCreate(android.os.Bundle b) {
         controlPrefs = getSharedPreferences(PREF, 0);
         super.onCreate(b);
+        importControlsFromCanonicalStore();
     }
 
     /** Local toolbar button helper; the V4 parent keeps its equivalent private. */
@@ -55,6 +56,70 @@ public class EnhancedWebsiteBuilderV4Activity extends WebsiteBuilderV4Activity {
     private void setFlag(Block b, String suffix, boolean value) { controlPrefs.edit().putBoolean(key(b, suffix), value).apply(); }
     private void setName(Block b, String value) { controlPrefs.edit().putString(key(b, "name"), value).apply(); }
 
+    /** Keep Batch 4 metadata inside the same builder_v3 document JSON used by the canonical editor. */
+    @Override void save() {
+        super.save();
+        exportControlsToCanonicalStore();
+    }
+
+    private void exportControlsToCanonicalStore() {
+        try {
+            String raw = sp.getString("data", "");
+            if (raw.isEmpty()) return;
+            JSONObject all = new JSONObject(raw);
+            JSONArray ps = all.optJSONArray("projects");
+            if (ps == null) return;
+            for (int i = 0; i < ps.length(); i++) {
+                JSONArray pages = ps.getJSONObject(i).optJSONArray("pages");
+                if (pages == null) continue;
+                for (int j = 0; j < pages.length(); j++) {
+                    JSONArray blocks = pages.getJSONObject(j).optJSONArray("blocks");
+                    if (blocks == null) continue;
+                    for (int k = 0; k < blocks.length(); k++) {
+                        JSONObject o = blocks.getJSONObject(k);
+                        int id = o.optInt("id", -1);
+                        if (id < 0) continue;
+                        JSONObject c = new JSONObject();
+                        c.put("locked", controlPrefs.getBoolean("b:" + id + ":locked", false));
+                        c.put("hidden", controlPrefs.getBoolean("b:" + id + ":hidden", false));
+                        c.put("name", controlPrefs.getString("b:" + id + ":name", o.optString("type", "Element") + " " + id));
+                        o.put("controls", c);
+                    }
+                }
+            }
+            sp.edit().putString("data", all.toString()).apply();
+        } catch (Exception ignored) {}
+    }
+
+    private void importControlsFromCanonicalStore() {
+        try {
+            String raw = sp.getString("data", "");
+            if (raw.isEmpty()) return;
+            JSONObject all = new JSONObject(raw);
+            JSONArray ps = all.optJSONArray("projects");
+            if (ps == null) return;
+            android.content.SharedPreferences.Editor e = controlPrefs.edit();
+            for (int i = 0; i < ps.length(); i++) {
+                JSONArray pages = ps.getJSONObject(i).optJSONArray("pages");
+                if (pages == null) continue;
+                for (int j = 0; j < pages.length(); j++) {
+                    JSONArray blocks = pages.getJSONObject(j).optJSONArray("blocks");
+                    if (blocks == null) continue;
+                    for (int k = 0; k < blocks.length(); k++) {
+                        JSONObject o = blocks.getJSONObject(k);
+                        int id = o.optInt("id", -1);
+                        JSONObject c = o.optJSONObject("controls");
+                        if (id < 0 || c == null) continue;
+                        e.putBoolean("b:" + id + ":locked", c.optBoolean("locked", false));
+                        e.putBoolean("b:" + id + ":hidden", c.optBoolean("hidden", false));
+                        e.putString("b:" + id + ":name", c.optString("name", o.optString("type", "Element") + " " + id));
+                    }
+                }
+            }
+            e.apply();
+        } catch (Exception ignored) {}
+    }
+
     private void pushUndo() {
         String s = snapshot();
         if (!undo.isEmpty() && undo.peek().equals(s)) return;
@@ -75,23 +140,27 @@ public class EnhancedWebsiteBuilderV4Activity extends WebsiteBuilderV4Activity {
     }
 
     private JSONObject blockJson(Block b) throws Exception {
+        JSONObject c = new JSONObject().put("locked", flag(b,"locked")).put("hidden", flag(b,"hidden")).put("name", name(b));
         return new JSONObject().put("id",b.id).put("parent",b.parent).put("type",b.type).put("text",b.text)
                 .put("x",b.x).put("y",b.y).put("w",b.w).put("h",b.h).put("bg",b.bg).put("bg2",b.bg2)
                 .put("tc",b.tc).put("font",b.font).put("opacity",b.opacity).put("radius",b.radius)
                 .put("uri",b.uri).put("action",b.action).put("target",b.target).put("fill",b.fill)
-                .put("crop",b.crop).put("animation",b.animation);
+                .put("crop",b.crop).put("animation",b.animation).put("controls",c);
     }
 
     private void restore(String raw) {
         try {
             JSONObject o = new JSONObject(raw); project.name=o.optString("project",project.name);
             project.pages.clear(); JSONArray ps=o.getJSONArray("pages");
+            android.content.SharedPreferences.Editor ce = controlPrefs.edit();
             for(int i=0;i<ps.length();i++) { JSONObject po=ps.getJSONObject(i); Page p=new Page(po.optString("name","Home")); p.bg=po.optInt("bg",Color.WHITE); JSONArray bs=po.optJSONArray("blocks");
                 if(bs!=null) for(int j=0;j<bs.length();j++){JSONObject x=bs.getJSONObject(j);Block b=new Block(x.optInt("id"),x.optString("type","Text"),x.optString("text",""));
-                    b.parent=x.optInt("parent",0);b.x=x.optInt("x",24);b.y=x.optInt("y",24);b.w=x.optInt("w",300);b.h=x.optInt("h",80);b.bg=x.optInt("bg",Color.TRANSPARENT);b.bg2=x.optInt("bg2",Color.WHITE);b.tc=x.optInt("tc",Color.DKGRAY);b.font=x.optInt("font",18);b.opacity=(float)x.optDouble("opacity",1);b.radius=(float)x.optDouble("radius",0);b.uri=x.optString("uri","");b.action=x.optString("action","None");b.target=x.optString("target","");b.fill=x.optString("fill","solid");b.crop=x.optBoolean("crop",false);b.animation=x.optString("animation","None");p.blocks.add(b);}
+                    b.parent=x.optInt("parent",0);b.x=x.optInt("x",24);b.y=x.optInt("y",24);b.w=x.optInt("w",300);b.h=x.optInt("h",80);b.bg=x.optInt("bg",Color.TRANSPARENT);b.bg2=x.optInt("bg2",Color.WHITE);b.tc=x.optInt("tc",Color.DKGRAY);b.font=x.optInt("font",18);b.opacity=(float)x.optDouble("opacity",1);b.radius=(float)x.optDouble("radius",0);b.uri=x.optString("uri","");b.action=x.optString("action","None");b.target=x.optString("target","");b.fill=x.optString("fill","solid");b.crop=x.optBoolean("crop",false);b.animation=x.optString("animation","None");
+                    JSONObject c=x.optJSONObject("controls");if(c!=null){ce.putBoolean(key(b,"locked"),c.optBoolean("locked",false));ce.putBoolean(key(b,"hidden"),c.optBoolean("hidden",false));ce.putString(key(b,"name"),c.optString("name",b.type+" "+b.id));}
+                    p.blocks.add(b);}
                 project.pages.add(p);
             }
-            nextId=o.optInt("nextId",nextId); page=project.pages.get(0); for(Page p:project.pages) if(p.name.equals(o.optString("page",page.name))) page=p;
+            ce.apply(); nextId=o.optInt("nextId",nextId); page=project.pages.get(0); for(Page p:project.pages) if(p.name.equals(o.optString("page",page.name))) page=p;
             selected=null; save(); render();
         } catch(Exception ignored) {}
     }
@@ -128,7 +197,7 @@ public class EnhancedWebsiteBuilderV4Activity extends WebsiteBuilderV4Activity {
         new AlertDialog.Builder(this).setTitle("Layers").setItems(labels,(d,which)->{selected=visible.get(which);layerActions();}).setNegativeButton("Close",null).show();
     }
     private void layerActions(){final Block b=selected;if(b==null)return;String[] actions={"Move up","Move down","Rename","Lock/Unlock","Hide/Show","Duplicate","Delete"};new AlertDialog.Builder(this).setTitle(name(b)).setItems(actions,(d,w)->{switch(w){case 0:reorder(b,-1);break;case 1:reorder(b,1);break;case 2:rename();break;case 3:toggleLock();break;case 4:toggleHide();break;case 5:duplicate();break;case 6:deleteSelected();break;}}).show();}
-    private void reorder(Block b,int delta){pushUndo();int i=page.blocks.indexOf(b),j=i+delta;if(i<0||j<0||j>=page.blocks.size()){ToastMsg("Already at layer edge");return;}Block x=page.blocks.remove(i);page.blocks.add(j,x);save();render();}
+    private void reorder(Block b,int delta){pushUndo();ArrayList<Block> top=new ArrayList<>();for(Block x:page.blocks)if(x.parent==0)top.add(x);int i=top.indexOf(b),j=i+delta;if(i<0||j<0||j>=top.size()){ToastMsg("Already at layer edge");return;}Block target=top.get(j);int from=page.blocks.indexOf(b),to=page.blocks.indexOf(target);page.blocks.remove(from);if(from<to)to--;page.blocks.add(to+(delta>0?1:0),b);save();render();}
     private void deleteSelected(){if(selected==null)return;pushUndo();int id=selected.id;for(Block b:new ArrayList<>(page.blocks))if(b.parent==id)b.parent=0;page.blocks.remove(selected);selected=null;save();render();}
 
     private void editMenu(){String[] actions={"Duplicate","Copy","Paste","Undo","Redo","Group with…","Ungroup","Lock / Unlock","Hide / Show","Layers / Reorder","Rename","Delete"};new AlertDialog.Builder(this).setTitle(selected==null?"Editor controls":name(selected)).setItems(actions,(d,w)->{switch(w){case 0:duplicate();break;case 1:copy();break;case 2:paste();break;case 3:undoAction();break;case 4:redoAction();break;case 5:group();break;case 6:ungroup();break;case 7:toggleLock();break;case 8:toggleHide();break;case 9:layers();break;case 10:rename();break;case 11:deleteSelected();break;}}).show();}
