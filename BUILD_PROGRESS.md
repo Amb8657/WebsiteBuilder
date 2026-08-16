@@ -1,6 +1,6 @@
 # Build Progress — Master 10-at-a-time plan
 
-## Current batch under verification: 9
+## Current batch under verification: 10
 
 ## QA policy
 Every batch gets full automated/source-contract regression for all completed batches plus a focused emulator run for the new batch and a critical-path smoke regression for the existing app. Every fifth batch (5, 10, 15, 20, ...) additionally runs the longer emulator lifecycle/persistence regression. A full-project emulator regression remains mandatory before the final APK. GitHub Actions uses concurrency cancellation for the emulator gate so stale queued emulator runs do not compete with the newest commit.
@@ -104,19 +104,31 @@ Implement features in batches of 10. Each batch must be coded and verified befor
 - [x] Send element to back
 - [x] Canvas zoom in/out/reset
 
-## Batch 9 — implemented, verification running
-- [ ] Multi-selection entry point
-- [ ] Distribute elements horizontally
-- [ ] Distribute elements vertically
-- [ ] Match selected widths
-- [ ] Match selected heights
-- [ ] Align selected elements to first X
-- [ ] Align selected elements to first Y
-- [ ] Nudge selected elements left
-- [ ] Nudge selected elements right
-- [ ] Nudge selected elements down
+## Batch 9 — completed and emulator verified
+- [x] Multi-selection entry point
+- [x] Distribute elements horizontally
+- [x] Distribute elements vertically
+- [x] Match selected widths
+- [x] Match selected heights
+- [x] Align selected elements to first X
+- [x] Align selected elements to first Y
+- [x] Nudge selected elements left
+- [x] Nudge selected elements right
+- [x] Nudge selected elements down
 
-## Batches 10–20
+## Batch 10 — visual styling controls under verification
+- [x] Opacity 100%
+- [x] Opacity 75%
+- [x] Opacity 50%
+- [x] Corner radius 0dp
+- [x] Corner radius 12dp
+- [x] Corner radius 24dp
+- [x] Font size increase
+- [x] Font size decrease
+- [x] Solid/outline fill toggle
+- [x] Visual style reset
+
+## Batches 11–20
 Each batch will contain exactly 10 additional features selected from the approved Master Specification, implemented and verified sequentially. If the master specification grows beyond 200 features, continue with additional 10-feature batches.
 
 ## Final QA gate
@@ -137,4 +149,4 @@ Each batch will contain exactly 10 additional features selected from the approve
 - [ ] No false failure from unrelated Android system services
 - [ ] Final APK artifact from latest verified commit
 
-Testing will use Android's recommended emulator/instrumented UI-testing approach and, where appropriate, modern UI Automator with explicit app-state waits and screenshots rather than brittle shell XML parsing. Android recommends emulator/device UI behavior tests and screenshot tests for regression coverage. https://developer.android.com/training/testing/other-components/ui-automator
+Testing will use Android's recommended emulator/instrumented UI-testing approach and, where appropriate, modern UI Automator with explicit app-state waits and screenshots rather than brittle shell XML parsing. Android recommends emulator/device UI behavior tests and screenshot tests for regression coverage.
