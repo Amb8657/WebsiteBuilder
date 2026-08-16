@@ -1,9 +1,9 @@
 # Build Progress — Master 10-at-a-time plan
 
-## Current batch under verification: 7
+## Current batch under verification: 8
 
 ## QA policy
-Every batch gets full automated/source-contract regression for all completed batches plus a focused emulator run for the new batch and a critical-path smoke regression for the existing app. Every fifth batch (5, 10, 15, 20, ...) additionally runs the longer emulator lifecycle/persistence regression. A full-project emulator regression remains mandatory before the final APK.
+Every batch gets full automated/source-contract regression for all completed batches plus a focused emulator run for the new batch and a critical-path smoke regression for the existing app. Every fifth batch (5, 10, 15, 20, ...) additionally runs the longer emulator lifecycle/persistence regression. A full-project emulator regression remains mandatory before the final APK. GitHub Actions uses concurrency cancellation for the emulator gate so stale queued emulator runs do not compete with the newest commit.
 
 ## Completion rule
 Implement features in batches of 10. Each batch must be coded and verified before moving to the next batch. After all currently defined batches are complete, run full emulator QA, fix all genuine failures, and only then produce the final APK. Never mark a feature complete without implementation/evidence.
@@ -68,31 +68,43 @@ Implement features in batches of 10. Each batch must be coded and verified befor
 - [x] Section/container hierarchy behavior
 - [x] Shape visual-container behavior
 
-## Batch 6 — implemented, cumulative verification added
-- [ ] Mobile responsive preview mode
-- [ ] Tablet responsive preview mode
-- [ ] Desktop responsive preview mode
-- [ ] All-device preview summary
-- [ ] Dedicated Preview & Testing panel
-- [ ] Explicit autosave toggle
-- [ ] About Project information panel
-- [ ] Active/inactive project status
-- [ ] Performance warning scan
-- [ ] Fullscreen/native preview entry
+## Batch 6 — completed and emulator verified
+- [x] Mobile responsive preview mode
+- [x] Tablet responsive preview mode
+- [x] Desktop responsive preview mode
+- [x] All-device preview summary
+- [x] Dedicated Preview & Testing panel
+- [x] Explicit autosave toggle
+- [x] About Project information panel
+- [x] Active/inactive project status
+- [x] Performance warning scan
+- [x] Fullscreen/native preview entry
 
-## Batch 7 — project management and local backup
-- [ ] Project rename
-- [ ] Project description
-- [ ] Created timestamp
-- [ ] Last-modified timestamp
-- [ ] Project data size
-- [ ] Progress/status indicator
-- [ ] Local project privacy flag
-- [ ] Form/submission data panel foundation
-- [ ] Local project backup
-- [ ] Local project restore
+## Batch 7 — completed and emulator verified
+- [x] Project rename
+- [x] Project description
+- [x] Created timestamp
+- [x] Last-modified timestamp
+- [x] Project data size
+- [x] Progress/status indicator
+- [x] Local project privacy flag
+- [x] Form/submission data panel foundation
+- [x] Local project backup
+- [x] Local project restore
 
-## Batches 8–20
+## Batch 8 — implemented, verification running
+- [ ] Align left
+- [ ] Center horizontally
+- [ ] Align right
+- [ ] Align top
+- [ ] Center vertically
+- [ ] Align bottom
+- [ ] Snap to 8dp grid
+- [ ] Bring element to front
+- [ ] Send element to back
+- [ ] Canvas zoom in/out/reset
+
+## Batches 9–20
 Each batch will contain exactly 10 additional features selected from the approved Master Specification, implemented and verified sequentially. If the master specification grows beyond 200 features, continue with additional 10-feature batches.
 
 ## Final QA gate
