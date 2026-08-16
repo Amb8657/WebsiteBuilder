@@ -5,10 +5,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * Keeps Batch 4 metadata inside the canonical builder_v3 document envelope.
- * Batch 5 through Batch 9 extend this proven layer without replacing the V4 editor engine.
+ * Canonical launcher/persistence layer. All completed feature batches are inherited
+ * without replacing the V4 editor engine.
  */
-public class Batch4PersistenceActivity extends Batch9FeatureActivity {
+public class Batch4PersistenceActivity extends Batch10FeatureActivity {
     private static final String DATA = "builder_v3";
     private static final String META = "batch4Meta";
 
