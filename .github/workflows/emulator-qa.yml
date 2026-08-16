@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: websitebuilder-emulator-qa
+  cancel-in-progress: true
+
 jobs:
   emulator-qa:
     runs-on: macos-26-intel
@@ -45,6 +49,9 @@ jobs:
 
       - name: Run Batch 7 cumulative contract audit
         run: bash "$GITHUB_WORKSPACE/.github/workflows/batch7-feature-audit.sh"
+
+      - name: Run Batch 8 cumulative contract audit
+        run: bash "$GITHUB_WORKSPACE/.github/workflows/batch8-feature-audit.sh"
 
       - name: Run app on Android Emulator
         uses: reactivecircus/android-emulator-runner@v2.38.0
