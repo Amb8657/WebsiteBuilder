@@ -65,8 +65,9 @@ jobs:
             grep -E -C 15 'FATAL EXCEPTION|AndroidRuntime|Process: com\.amb8657\.websitebuilder' v4-logcat.txt || true
             ! grep -qE 'FATAL EXCEPTION|Process: com\.amb8657\.websitebuilder' v4-logcat.txt
             adb shell pidof com.amb8657.websitebuilder >/dev/null
-            adb shell uiautomator dump /sdcard/v4-window.xml >/dev/null
-            adb shell cat /sdcard/v4-window.xml > v4-window.xml
+            echo '--- UI AUTOMATOR DUMP ---'
+            adb exec-out uiautomator dump /dev/tty > v4-window.xml
+            test -s v4-window.xml
             grep -q 'Build something beautiful' v4-window.xml
             grep -q 'Create a website' v4-window.xml
             grep -q 'Quick add' v4-window.xml
