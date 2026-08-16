@@ -28,31 +28,30 @@ public class Batch9FeatureActivity extends Batch8FeatureActivity {
         return list;
     }
 
-    private ArrayList<Block> chooseBlocks() {
+    /** Opens a true multi-choice selector and, only after Apply, opens the operation menu. */
+    private void chooseBlocks() {
         final ArrayList<Block> all = topBlocks();
-        if (all.size() < 2) { msg("Add at least two top-level elements"); return null; }
+        if (all.size() < 2) { msg("Add at least two top-level elements"); return; }
         final boolean[] checked = new boolean[all.size()];
         String[] labels = new String[all.size()];
         for (int i = 0; i < all.size(); i++) labels[i] = all.get(i).type + " " + all.get(i).id;
-        final ArrayList<Block> result = new ArrayList<>();
         new AlertDialog.Builder(this).setTitle("Select elements")
                 .setMultiChoiceItems(labels, checked, (d, which, isChecked) -> checked[which] = isChecked)
                 .setNegativeButton("Cancel", null)
                 .setPositiveButton("Apply", (d, w) -> {
+                    ArrayList<Block> result = new ArrayList<>();
                     for (int i = 0; i < all.size(); i++) if (checked[i]) result.add(all.get(i));
                     if (result.size() < 2) { msg("Select at least two elements"); return; }
                     multiActionMenu(result);
                 }).show();
-        return result;
     }
 
     /** 1: explicit multi-selection entry point. */
     private void multiSelect() { chooseBlocks(); }
 
-    /** 2: distribute selected elements evenly by their horizontal centers. */
+    /** 2: distribute selected elements evenly by their horizontal positions. */
     private void distributeHorizontal(ArrayList<Block> list) {
         if (list.size() < 3) { msg("Select three or more elements"); return; }
-        pushHistory();
         Collections.sort(list, Comparator.comparingInt(b -> b.x));
         int first = list.get(0).x, last = list.get(list.size()-1).x;
         int step = (last - first) / (list.size()-1);
@@ -63,7 +62,6 @@ public class Batch9FeatureActivity extends Batch8FeatureActivity {
     /** 3: distribute selected elements evenly by their vertical positions. */
     private void distributeVertical(ArrayList<Block> list) {
         if (list.size() < 3) { msg("Select three or more elements"); return; }
-        pushHistory();
         Collections.sort(list, Comparator.comparingInt(b -> b.y));
         int first = list.get(0).y, last = list.get(list.size()-1).y;
         int step = (last - first) / (list.size()-1);
@@ -72,30 +70,25 @@ public class Batch9FeatureActivity extends Batch8FeatureActivity {
     }
 
     /** 4: make selected elements the same width as the first selected element. */
-    private void matchWidth(ArrayList<Block> list) { pushHistory(); int w=list.get(0).w; for(Block b:list)b.w=w; changedMulti("Matched width"); }
+    private void matchWidth(ArrayList<Block> list) { int w=list.get(0).w; for(Block b:list)b.w=w; changedMulti("Matched width"); }
 
     /** 5: make selected elements the same height as the first selected element. */
-    private void matchHeight(ArrayList<Block> list) { pushHistory(); int h=list.get(0).h; for(Block b:list)b.h=h; changedMulti("Matched height"); }
+    private void matchHeight(ArrayList<Block> list) { int h=list.get(0).h; for(Block b:list)b.h=h; changedMulti("Matched height"); }
 
     /** 6: align all selected elements to the first selected element's X position. */
-    private void alignToFirstX(ArrayList<Block> list) { pushHistory(); int x=list.get(0).x; for(Block b:list)b.x=x; changedMulti("Aligned to first X"); }
+    private void alignToFirstX(ArrayList<Block> list) { int x=list.get(0).x; for(Block b:list)b.x=x; changedMulti("Aligned to first X"); }
 
     /** 7: align all selected elements to the first selected element's Y position. */
-    private void alignToFirstY(ArrayList<Block> list) { pushHistory(); int y=list.get(0).y; for(Block b:list)b.y=y; changedMulti("Aligned to first Y"); }
+    private void alignToFirstY(ArrayList<Block> list) { int y=list.get(0).y; for(Block b:list)b.y=y; changedMulti("Aligned to first Y"); }
 
     /** 8: nudge all selected elements 8dp left. */
-    private void nudgeLeft(ArrayList<Block> list) { pushHistory(); int n=d(8); for(Block b:list)b.x=Math.max(0,b.x-n); changedMulti("Nudged left 8dp"); }
+    private void nudgeLeft(ArrayList<Block> list) { int n=d(8); for(Block b:list)b.x=Math.max(0,b.x-n); changedMulti("Nudged left 8dp"); }
 
     /** 9: nudge all selected elements 8dp right. */
-    private void nudgeRight(ArrayList<Block> list) { pushHistory(); int n=d(8); for(Block b:list)b.x+=n; changedMulti("Nudged right 8dp"); }
+    private void nudgeRight(ArrayList<Block> list) { int n=d(8); for(Block b:list)b.x+=n; changedMulti("Nudged right 8dp"); }
 
-    /** 10: nudge all selected elements 8dp down; repeatable for precise placement. */
-    private void nudgeDown(ArrayList<Block> list) { pushHistory(); int n=d(8); for(Block b:list)b.y+=n; changedMulti("Nudged down 8dp"); }
-
-    private void pushHistory() {
-        // Batch 8 persists each concrete change; the existing V4 history is intentionally reused.
-        save();
-    }
+    /** 10: nudge all selected elements 8dp down. */
+    private void nudgeDown(ArrayList<Block> list) { int n=d(8); for(Block b:list)b.y+=n; changedMulti("Nudged down 8dp"); }
 
     private void changedMulti(String text) { save(); render(); msg(text); }
 
@@ -106,13 +99,5 @@ public class Batch9FeatureActivity extends Batch8FeatureActivity {
         }).show();
     }
 
-    private void multiMenu() {
-        String[] actions={"Select multiple elements","Distribute horizontally","Distribute vertically","Match width","Match height","Align X to first","Align Y to first","Nudge left 8dp","Nudge right 8dp","Nudge down 8dp"};
-        new AlertDialog.Builder(this).setTitle("Multi-element tools").setItems(actions,(d,w)->{
-            if(w==0){multiSelect();return;}
-            final ArrayList<Block> list=chooseBlocks();
-            if(list==null)return;
-            switch(w){case 1:distributeHorizontal(list);break;case 2:distributeVertical(list);break;case 3:matchWidth(list);break;case 4:matchHeight(list);break;case 5:alignToFirstX(list);break;case 6:alignToFirstY(list);break;case 7:nudgeLeft(list);break;case 8:nudgeRight(list);break;case 9:nudgeDown(list);break;default:break;}
-        }).show();
-    }
+    private void multiMenu() { multiSelect(); }
 }
