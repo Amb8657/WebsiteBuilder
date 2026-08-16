@@ -1,5 +1,10 @@
 # Build Progress — Master 10-at-a-time plan
 
+## Current batch under verification: 5
+
+## QA policy
+Every batch gets full automated/source-contract regression for all completed batches plus a focused emulator run for the new batch and a critical-path smoke regression for the existing app. Every fifth batch (5, 10, 15, 20, ...) additionally runs the longer emulator lifecycle/persistence regression. A full-project emulator regression remains mandatory before the final APK.
+
 ## Completion rule
 Implement features in batches of 10. Each batch must be coded and verified before moving to the next batch. After all currently defined batches are complete, run full emulator QA, fix all genuine failures, and only then produce the final APK. Never mark a feature complete without implementation/evidence.
 
@@ -39,19 +44,31 @@ Implement features in batches of 10. Each batch must be coded and verified befor
 - [ ] Final UI parity
 - [ ] Final latest-source APK verification
 
-## Batch 4 — advanced editor controls (next implementation batch)
-- [ ] Duplicate element
-- [ ] Copy/paste element
-- [ ] Undo
-- [ ] Redo
-- [ ] Group elements
-- [ ] Ungroup elements
-- [ ] Lock element
-- [ ] Hide/show element
-- [ ] Layers panel/reordering
-- [ ] Element rename
+## Batch 4 — advanced editor controls
+- [x] Duplicate element
+- [x] Copy/paste element
+- [x] Undo
+- [x] Redo
+- [x] Group elements
+- [x] Ungroup elements
+- [x] Lock element
+- [x] Hide/show element
+- [x] Layers panel/reordering
+- [x] Element rename
 
-## Batches 5–20
+## Batch 5 — current implementation/verification
+- [ ] Final Builder V3 UI parity
+- [ ] Fully contextual property panel
+- [ ] Text free X/Y movement and robust selection behavior
+- [ ] Text independent resize with font auto-scaling
+- [ ] Image property panel and selected-image preview
+- [ ] Explicit image crop mode separate from resize
+- [ ] Button styling/action controls and preview behavior
+- [ ] Button deletion dependency warning/cleanup
+- [ ] Section/container hierarchy behavior
+- [ ] Shape visual-container behavior
+
+## Batches 6–20
 Each batch will contain exactly 10 additional features selected from the approved Master Specification, implemented and verified sequentially. If the master specification grows beyond 200 features, continue with additional 10-feature batches.
 
 ## Final QA gate
