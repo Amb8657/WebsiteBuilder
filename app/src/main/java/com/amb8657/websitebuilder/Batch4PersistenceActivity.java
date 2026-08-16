@@ -1,15 +1,14 @@
 package com.amb8657.websitebuilder;
 
-import android.graphics.Color;
 import android.content.SharedPreferences;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
  * Keeps Batch 4 metadata inside the canonical builder_v3 document envelope.
- * Batch 5 and Batch 6 extend this proven layer without replacing the V4 editor engine.
+ * Batch 5, Batch 6 and Batch 7 extend this proven layer without replacing the V4 editor engine.
  */
-public class Batch4PersistenceActivity extends Batch6FeatureActivity {
+public class Batch4PersistenceActivity extends Batch7FeatureActivity {
     private static final String DATA = "builder_v3";
     private static final String META = "batch4Meta";
 
