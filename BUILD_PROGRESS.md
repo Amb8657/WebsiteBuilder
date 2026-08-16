@@ -1,6 +1,6 @@
 # Build Progress — Master 10-at-a-time plan
 
-## Current batch under verification: 6
+## Current batch under verification: 7
 
 ## QA policy
 Every batch gets full automated/source-contract regression for all completed batches plus a focused emulator run for the new batch and a critical-path smoke regression for the existing app. Every fifth batch (5, 10, 15, 20, ...) additionally runs the longer emulator lifecycle/persistence regression. A full-project emulator regression remains mandatory before the final APK.
@@ -68,7 +68,7 @@ Implement features in batches of 10. Each batch must be coded and verified befor
 - [x] Section/container hierarchy behavior
 - [x] Shape visual-container behavior
 
-## Batch 6 — responsive preview and project tools
+## Batch 6 — implemented, cumulative verification added
 - [ ] Mobile responsive preview mode
 - [ ] Tablet responsive preview mode
 - [ ] Desktop responsive preview mode
@@ -80,7 +80,19 @@ Implement features in batches of 10. Each batch must be coded and verified befor
 - [ ] Performance warning scan
 - [ ] Fullscreen/native preview entry
 
-## Batches 7–20
+## Batch 7 — project management and local backup
+- [ ] Project rename
+- [ ] Project description
+- [ ] Created timestamp
+- [ ] Last-modified timestamp
+- [ ] Project data size
+- [ ] Progress/status indicator
+- [ ] Local project privacy flag
+- [ ] Form/submission data panel foundation
+- [ ] Local project backup
+- [ ] Local project restore
+
+## Batches 8–20
 Each batch will contain exactly 10 additional features selected from the approved Master Specification, implemented and verified sequentially. If the master specification grows beyond 200 features, continue with additional 10-feature batches.
 
 ## Final QA gate
