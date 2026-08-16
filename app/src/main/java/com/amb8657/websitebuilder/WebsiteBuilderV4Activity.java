@@ -4,6 +4,9 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Handler;
 import android.view.Gravity;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
@@ -39,16 +42,16 @@ public class WebsiteBuilderV4Activity extends BuilderV3Activity {
     @Override void splash() {
         base();
         root.setGravity(Gravity.CENTER);
-        root.setBackgroundColor(Color.rgb(101,0,0));
+        root.setBackgroundColor(CanvaDesignSystem.BG);
         LinearLayout content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
         content.setGravity(Gravity.CENTER);
-        content.setPadding(dp(18),dp(18),dp(18),dp(18));
+        content.setPadding(dp(24),dp(24),dp(24),dp(24));
         ImageView logo = new ImageView(this);
         logo.setImageResource(R.drawable.gmail);
         logo.setContentDescription("Gmail branding");
         logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        content.addView(logo,new LinearLayout.LayoutParams(dp(230),dp(230)));
+        content.addView(logo,new LinearLayout.LayoutParams(dp(112),dp(112)));
         TextView title = heading("Website Builder",26);
         title.setGravity(Gravity.CENTER);
         content.addView(title,new LinearLayout.LayoutParams(-1,dp(52)));
@@ -153,12 +156,76 @@ public class WebsiteBuilderV4Activity extends BuilderV3Activity {
 
         HorizontalScrollView hs=new HorizontalScrollView(this); LinearLayout addBar=new LinearLayout(this); addBar.setGravity(Gravity.CENTER_VERTICAL); addBar.setPadding(dp(8),dp(5),dp(8),dp(5)); addBar.setBackgroundColor(CanvaDesignSystem.PANEL); tools=addBar; hs.addView(addBar); root.addView(hs,new LinearLayout.LayoutParams(-1,dp(52)));
 
-        canvasScroll=new ScrollView(this); canvas=new android.widget.FrameLayout(this); canvasScroll.addView(canvas,new ScrollView.LayoutParams(-1,dp(760))); root.addView(canvasScroll,new LinearLayout.LayoutParams(-1,0,1));
+        canvasScroll=new ScrollView(this); canvasScroll.setFillViewport(true); canvasScroll.setClipToPadding(false);
+        canvas=new android.widget.FrameLayout(this); canvas.setFocusable(true); canvasScroll.addView(canvas,new ScrollView.LayoutParams(-1,dp(760))); root.addView(canvasScroll,new LinearLayout.LayoutParams(-1,0,1));
 
         LinearLayout bottom=new LinearLayout(this); bottom.setPadding(dp(6),dp(5),dp(6),dp(5)); bottom.setBackgroundColor(CanvaDesignSystem.PANEL);
         Button pagesButton=pill("Pages"),styleButton=pill("Style"),previewButton=pill("Preview"),saveButton=pill("Save");
         pagesButton.setOnClickListener(v->pageManager()); styleButton.setOnClickListener(v->pageStyle()); previewButton.setOnClickListener(v->preview()); saveButton.setOnClickListener(v->{save();Toast.makeText(this,"Saved",Toast.LENGTH_SHORT).show();});
         bottom.addView(pagesButton,new LinearLayout.LayoutParams(0,dp(50),1)); bottom.addView(styleButton,new LinearLayout.LayoutParams(0,dp(50),1)); bottom.addView(previewButton,new LinearLayout.LayoutParams(0,dp(50),1)); bottom.addView(saveButton,new LinearLayout.LayoutParams(0,dp(50),1)); root.addView(bottom,new LinearLayout.LayoutParams(-1,dp(62)));
         render();
+    }
+
+    @Override boolean move(View v, MotionEvent e, Block b) {
+        if (e.getAction() == MotionEvent.ACTION_DOWN) {
+            v.getParent().requestDisallowInterceptTouchEvent(true);
+            v.setTag(new float[]{e.getRawX(), e.getRawY(), b.x, b.y});
+            selected = b;
+            return true;
+        }
+        if (e.getAction() == MotionEvent.ACTION_MOVE) {
+            float[] a = (float[]) v.getTag();
+            int cw = Math.max(dp(24), canvas.getWidth());
+            int ch = Math.max(dp(24), canvas.getHeight());
+            MoveController.Position p = new MoveController().move(
+                    new MoveController.Position((int)a[2], (int)a[3]),
+                    (e.getRawX()-a[0])/den(), (e.getRawY()-a[1])/den(),
+                    Math.round(cw/den()), Math.round(ch/den()), b.w, b.h);
+            b.x = p.x; b.y = p.y;
+            v.setX(dp(b.x)); v.setY(dp(b.y));
+            return true;
+        }
+        if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL) {
+            v.getParent().requestDisallowInterceptTouchEvent(false);
+            save();
+            render();
+            showProperties(b);
+            return true;
+        }
+        return true;
+    }
+
+    @Override boolean resize(MotionEvent e, View v, Block b, int gravity) {
+        if (e.getAction() == MotionEvent.ACTION_DOWN) {
+            v.getParent().requestDisallowInterceptTouchEvent(true);
+            v.setTag(new float[]{e.getRawX(), e.getRawY(), b.w, b.h, b.x, b.y, b.font});
+            return true;
+        }
+        if (e.getAction() == MotionEvent.ACTION_MOVE) {
+            float[] a=(float[])v.getTag();
+            float dx=(e.getRawX()-a[0])/den(), dy=(e.getRawY()-a[1])/den();
+            ResizeHandle handle = ResizeHandle.BOTTOM_RIGHT;
+            boolean left=(gravity&Gravity.LEFT)!=0, right=(gravity&Gravity.RIGHT)!=0;
+            boolean top=(gravity&Gravity.TOP)!=0, bottom=(gravity&Gravity.BOTTOM)!=0;
+            if(left&&top) handle=ResizeHandle.TOP_LEFT; else if(right&&top) handle=ResizeHandle.TOP_RIGHT;
+            else if(left&&bottom) handle=ResizeHandle.BOTTOM_LEFT; else if(right&&bottom) handle=ResizeHandle.BOTTOM_RIGHT;
+            else if(left) handle=ResizeHandle.LEFT; else if(right) handle=ResizeHandle.RIGHT;
+            else if(top) handle=ResizeHandle.TOP; else handle=ResizeHandle.BOTTOM;
+            ResizeController.Geometry g=new ResizeController.Geometry((int)a[4],(int)a[5],(int)a[2],(int)a[3]);
+            g=new ResizeController().resize(g,handle,dx,dy);
+            int cw=Math.max(24,Math.round(canvas.getWidth()/den()));
+            int ch=Math.max(24,Math.round(canvas.getHeight()/den()));
+            g.width=Math.min(g.width,Math.max(24,cw-g.x));
+            g.height=Math.min(g.height,Math.max(24,ch-g.y));
+            b.x=Math.max(0,g.x); b.y=Math.max(0,g.y); b.w=Math.max(24,g.width); b.h=Math.max(24,g.height);
+            if("Text".equals(b.type)||"Heading".equals(b.type)||"Button".equals(b.type)){
+                float scale=Math.min(b.w/(float)Math.max(24,(int)a[2]),b.h/(float)Math.max(24,(int)a[3]));
+                b.font=Math.max(8,Math.min(96,(int)(a[6]*Math.max(.5f,scale))));
+            }
+            v.setX(dp(b.x)); v.setY(dp(b.y)); ViewGroup.LayoutParams lp=v.getLayoutParams(); lp.width=dp(b.w); lp.height=dp(b.h); v.setLayoutParams(lp);
+            return true;
+        }
+        if(e.getAction()==MotionEvent.ACTION_UP||e.getAction()==MotionEvent.ACTION_CANCEL){v.getParent().requestDisallowInterceptTouchEvent(false);save();render();return true;}
+        return true;
     }
 }
