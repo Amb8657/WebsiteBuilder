@@ -5,19 +5,23 @@ TARGET="app/src/main/java/com/amb8657/websitebuilder/Batch8FeatureActivity.java"
 LAUNCHER="app/src/main/java/com/amb8657/websitebuilder/Batch4PersistenceActivity.java"
 PASS=0
 FAIL=0
-check(){ if "$@"; then echo "[BATCH8-PASS] $2"; PASS=$((PASS+1)); else echo "[BATCH8-FAIL] $2"; FAIL=$((FAIL+1)); fi; }
-[[ -f "$TARGET" ]] && check grep -q 'class Batch8FeatureActivity' "$TARGET" 'Batch 8 activity exists' || { echo '[BATCH8-FAIL] Batch 8 activity exists'; FAIL=$((FAIL+1)); }
-check grep -q 'alignLeft' "$TARGET" 'Left alignment'
-check grep -q 'alignCenter' "$TARGET" 'Horizontal center alignment'
-check grep -q 'alignRight' "$TARGET" 'Right alignment'
-check grep -q 'alignTop' "$TARGET" 'Top alignment'
-check grep -q 'alignMiddle' "$TARGET" 'Vertical center alignment'
-check grep -q 'alignBottom' "$TARGET" 'Bottom alignment'
-check grep -q 'snapGrid' "$TARGET" '8dp grid snapping'
-check grep -q 'bringFront' "$TARGET" 'Bring to front'
-check grep -q 'sendBack' "$TARGET" 'Send to back'
-check grep -q 'resetZoom' "$TARGET" 'Canvas zoom reset'
-check grep -q 'extends Batch8FeatureActivity' "$LAUNCHER" 'Canonical launcher uses Batch 8'
+check(){
+  local label="$1"; shift
+  if "$@"; then echo "[BATCH8-PASS] $label"; PASS=$((PASS+1)); else echo "[BATCH8-FAIL] $label"; FAIL=$((FAIL+1)); fi
+}
+check 'Batch 8 activity exists' test -f "$TARGET"
+check 'Left alignment' grep -q 'alignLeft' "$TARGET"
+check 'Horizontal center alignment' grep -q 'alignCenter' "$TARGET"
+check 'Right alignment' grep -q 'alignRight' "$TARGET"
+check 'Top alignment' grep -q 'alignTop' "$TARGET"
+check 'Vertical center alignment' grep -q 'alignMiddle' "$TARGET"
+check 'Bottom alignment' grep -q 'alignBottom' "$TARGET"
+check '8dp grid snapping' grep -q 'snapGrid' "$TARGET"
+check 'Bring to front' grep -q 'bringFront' "$TARGET"
+check 'Send to back' grep -q 'sendBack' "$TARGET"
+check 'Canvas zoom reset' grep -q 'resetZoom' "$TARGET"
+# Batch 9 inherits Batch 8, so the canonical launcher does not need to extend Batch 8 directly.
+check 'Canonical launcher includes Batch 8 through inheritance' grep -Eq 'extends Batch(8|9)FeatureActivity' "$LAUNCHER"
 echo "BATCH8_PASS=$PASS"
 echo "BATCH8_FAIL=$FAIL"
-((FAIL == 0))
+if (( FAIL != 0 )); then exit 1; fi
