@@ -1,7 +1,6 @@
 package com.amb8657.websitebuilder;
 
 import android.app.AlertDialog;
-import android.graphics.Color;
 import android.text.InputType;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,9 +9,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-/** Batch 5 editor layer: contextual properties and element-specific controls.
- *  It deliberately sits above the proven V4 engine so Batch 1-4 behavior remains intact.
- */
+/** Batch 5 editor layer: contextual properties and element-specific controls. */
 public class Batch5FeatureActivity extends EnhancedWebsiteBuilderV4Activity {
     private int d(int v) { return (int)(v * getResources().getDisplayMetrics().density + .5f); }
     private EditText field(String hint, String value, boolean number) {
@@ -21,7 +18,13 @@ public class Batch5FeatureActivity extends EnhancedWebsiteBuilderV4Activity {
         return e;
     }
     private void applyCommon(EditText x, EditText y, EditText w, EditText h) {
-        try { if (selected == null) return; selected.x=Math.max(0,Integer.parseInt(x.getText().toString())); selected.y=Math.max(0,Integer.parseInt(y.getText().toString())); selected.w=Math.max(24,Integer.parseInt(w.getText().toString())); selected.h=Math.max(24,Integer.parseInt(h.getText().toString())); } catch(Exception ignored) {}
+        try {
+            if (selected == null) return;
+            selected.x=Math.max(0,Integer.parseInt(x.getText().toString()));
+            selected.y=Math.max(0,Integer.parseInt(y.getText().toString()));
+            selected.w=Math.max(24,Integer.parseInt(w.getText().toString()));
+            selected.h=Math.max(24,Integer.parseInt(h.getText().toString()));
+        } catch(Exception ignored) {}
     }
     @Override void editor() {
         super.editor();
@@ -40,10 +43,12 @@ public class Batch5FeatureActivity extends EnhancedWebsiteBuilderV4Activity {
         EditText x=field("X",String.valueOf(b.x),true), y=field("Y",String.valueOf(b.y),true), w=field("Width",String.valueOf(b.w),true), h=field("Height",String.valueOf(b.h),true);
         LinearLayout row1=new LinearLayout(this),row2=new LinearLayout(this); row1.addView(x,new LinearLayout.LayoutParams(0,d(52),1));row1.addView(y,new LinearLayout.LayoutParams(0,d(52),1));row2.addView(w,new LinearLayout.LayoutParams(0,d(52),1));row2.addView(h,new LinearLayout.LayoutParams(0,d(52),1));box.addView(row1);box.addView(row2);
 
+        EditText font = null;
         if ("Text".equals(b.type) || "Heading".equals(b.type) || "Button".equals(b.type)) {
-            EditText font=field("Font size",String.valueOf(b.font),true); box.addView(font,new LinearLayout.LayoutParams(-1,d(52)));
+            font=field("Font size",String.valueOf(b.font),true); box.addView(font,new LinearLayout.LayoutParams(-1,d(52)));
             Button fontMinus=btn("− Font"),fontPlus=btn("+ Font"); LinearLayout fr=new LinearLayout(this);fr.addView(fontMinus,new LinearLayout.LayoutParams(0,d(44),1));fr.addView(fontPlus,new LinearLayout.LayoutParams(0,d(44),1));box.addView(fr);
-            fontMinus.setOnClickListener(v->{b.font=Math.max(8,b.font-1);font.setText(String.valueOf(b.font));}); fontPlus.setOnClickListener(v->{b.font=Math.min(96,b.font+1);font.setText(String.valueOf(b.font));});
+            EditText finalFont = font;
+            fontMinus.setOnClickListener(v->{b.font=Math.max(8,b.font-1);finalFont.setText(String.valueOf(b.font));}); fontPlus.setOnClickListener(v->{b.font=Math.min(96,b.font+1);finalFont.setText(String.valueOf(b.font));});
             if ("Button".equals(b.type)) {
                 EditText radius=field("Corner radius",String.valueOf((int)b.radius),true);box.addView(radius,new LinearLayout.LayoutParams(-1,d(52)));
                 Button bg=btn("Button background");bg.setOnClickListener(v->PhotoshopColorPickerDialog.show(this,b.bg,c->{b.bg=c;render();}));box.addView(bg,new LinearLayout.LayoutParams(-1,d(44)));
@@ -59,6 +64,7 @@ public class Batch5FeatureActivity extends EnhancedWebsiteBuilderV4Activity {
             Button fill=btn("Container fill");fill.setOnClickListener(v->PhotoshopColorPickerDialog.show(this,b.bg,c->{b.bg=c;render();}));box.addView(fill,new LinearLayout.LayoutParams(-1,d(44)));
             Button children=btn("Move children into container");children.setOnClickListener(v->{for(Block child:page.blocks) if(child!=b && child.parent==0 && child.x>=b.x && child.y>=b.y && child.x+child.w<=b.x+b.w && child.y+child.h<=b.y+b.h) child.parent=b.id;save();render();});box.addView(children,new LinearLayout.LayoutParams(-1,d(44)));
         }
-        new AlertDialog.Builder(this).setTitle("Properties").setView(box).setNegativeButton("Cancel",null).setPositiveButton("Apply",(di,which)->{applyCommon(x,y,w,h);try{if("Text".equals(b.type)||"Heading".equals(b.type)||"Button".equals(b.type))b.font=Math.max(8,Math.min(96,Integer.parseInt(((EditText)box.getChildAt(2)).getText().toString()));}catch(Exception ignored){} save();render();}).show();
+        EditText finalFont = font;
+        new AlertDialog.Builder(this).setTitle("Properties").setView(box).setNegativeButton("Cancel",null).setPositiveButton("Apply",(di,which)->{applyCommon(x,y,w,h);try{if(finalFont!=null)b.font=Math.max(8,Math.min(96,Integer.parseInt(finalFont.getText().toString())));}catch(Exception ignored){} save();render();}).show();
     }
 }
