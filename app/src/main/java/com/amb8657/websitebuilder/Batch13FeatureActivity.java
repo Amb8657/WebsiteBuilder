@@ -110,7 +110,7 @@ public class Batch13FeatureActivity extends Batch12FeatureActivity {
     }
     private void rulers(){if(!ok())return;StringBuilder x=new StringBuilder("X: ");for(int i=0;i<=10;i++)x.append(i*100).append(i==10?"":"  |  ");new AlertDialog.Builder(this).setTitle("Rulers / coordinates").setMessage(x+"\n\nSelected: "+(selected==null?"none":selected.x+"dp, "+selected.y+"dp")).setPositiveButton("Done",null).show();}
     private void zoom(float factor){float z=p().getFloat("zoom",1f);z=factor==1f?1f:Math.max(.5f,Math.min(1.5f,z*factor));p().edit().putFloat("zoom",z).apply();if(root!=null){root.setScaleX(z);root.setScaleY(z);}msg("Canvas zoom: "+Math.round(z*100)+"%");}
-    private void pan(float dx,float dy){panX+=d(dx);panY+=d(dy);if(canvas!=null){canvas.setTranslationX(panX);canvas.setTranslationY(panY);}panEnabled=true;msg("Canvas panned");}
+    private void pan(float dx,float dy){panX+=Math.round(d(dx));panY+=Math.round(d(dy));if(canvas!=null){canvas.setTranslationX(panX);canvas.setTranslationY(panY);}panEnabled=true;msg("Canvas panned");}
 
     /** 10: contextual advanced properties and object rename. */
     private void renameSelected(){
