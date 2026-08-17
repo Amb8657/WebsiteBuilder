@@ -22,7 +22,8 @@ check "$FILE" '"Table"' 'Table element'
 check "$FILE" '"Gallery"' 'Gallery element'
 check "$FILE" '"Slider"' 'Slider/carousel element'
 check "$FILE" 'Block b=new Block(nextId++,type,text)' 'Advanced elements are real editable blocks'
-check "$FILE" '@Override TextView blockView(Block b,int index)' 'Advanced elements render in the real canvas'
+check "$FILE" 'page.blocks.add(b);selected=b;save();render();msg(type+" added")' 'Advanced elements are committed to the document and sent through the canonical canvas renderer'
+check "$FILE" 'private void addConfigured(String type,String title,String hint)' 'Advanced elements have editable configuration flow'
 check "$MANIFEST" 'android:name=".Batch14FeatureActivity"' 'Batch 14 is the Android launcher'
 echo "Batch 14 audit: $pass passed, $fail failed"
 (( fail == 0 ))
