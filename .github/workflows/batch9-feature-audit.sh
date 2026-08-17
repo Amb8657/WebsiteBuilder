@@ -23,12 +23,12 @@ for item in \
 done
 # The canonical launcher intentionally points to the latest cumulative activity.
 # Verify the intermediate Batch 9 -> Batch 10 inheritance separately.
-if grep -q 'extends Batch12FeatureActivity' "$LAUNCH" && grep -q 'extends Batch9FeatureActivity' "$CHAIN"; then
-  pass 'canonical launcher preserves Batch 9 through Batch 12 chain'
+if grep -q 'extends Batch13FeatureActivity' "$LAUNCH" && grep -q 'extends Batch9FeatureActivity' "$CHAIN"; then
+  pass 'canonical launcher preserves Batch 9 through Batch 13 chain'
 else
-  fail 'canonical launcher preserves Batch 9 through Batch 12 chain'
+  fail 'canonical launcher preserves Batch 9 through Batch 13 chain'
 fi
-grep -q 'Batch 8' BUILD_PROGRESS.md && pass 'cumulative progress retained' || fail 'cumulative progress retained'
+grep -q 'Batch 9' BUILD_PROGRESS.md && pass 'cumulative progress retained' || fail 'cumulative progress retained'
 echo "BATCH9_PASS=$PASS"
 echo "BATCH9_FAIL=$FAIL"
 (( FAIL == 0 ))
