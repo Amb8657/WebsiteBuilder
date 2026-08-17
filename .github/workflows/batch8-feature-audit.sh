@@ -24,7 +24,7 @@ check 'Canvas zoom reset' grep -q 'resetZoom' "$TARGET"
 # intentionally advances as new batches are added, so verify the current completed
 # later batch layer rather than requiring a specific historical direct parent.
 check 'Canonical launcher remains Batch4PersistenceActivity' grep -q 'class Batch4PersistenceActivity' "$LAUNCHER"
-check 'Batch4 persistence layer reaches Batch8+' grep -Eq 'extends Batch(8|9|10|11|12)FeatureActivity' "$LAUNCHER"
+check 'Batch4 persistence layer reaches Batch8+' grep -Eq 'extends Batch(8|9|10|11|12|13)FeatureActivity' "$LAUNCHER"
 echo "BATCH8_PASS=$PASS"
 echo "BATCH8_FAIL=$FAIL"
 if (( FAIL != 0 )); then exit 1; fi
