@@ -7,4 +7,5 @@ bash "$ROOT/.github/workflows/run-emulator-qa.sh"
 
 if [[ "${QA_EMULATOR_MODE:-fast}" == "full" ]]; then
   bash "$ROOT/.github/workflows/run-full-emulator-regression.sh"
+  bash "$ROOT/.github/workflows/run-integration-regression.sh"
 fi
