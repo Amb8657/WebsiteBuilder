@@ -2,13 +2,11 @@
 set -euo pipefail
 cd "${GITHUB_WORKSPACE:-$(pwd)}"
 
-# Every batch gets full source/contract regression plus a focused emulator run.
-# Every fifth batch additionally gets the longer emulator restart/persistence path.
+# The cumulative gate is intentionally frozen at the current master-list milestone.
+# Batch 12 is the release gate; do not silently downgrade QA to an earlier batch.
 batch="$(grep -E '^## Current batch under verification:' BUILD_PROGRESS.md | sed -E 's/.*: *([0-9]+).*/\1/' | head -n1 || true)"
-# Batch 11 is the current verified development batch. Keep the QA gate aligned with
-# the implemented Batch 11 contract even if the human progress note lags behind.
-if [[ -z "$batch" || "$batch" -lt 11 ]]; then
-  batch=11
+if [[ -z "$batch" || "$batch" -lt 12 ]]; then
+  batch=12
 fi
 if (( batch % 5 == 0 )); then
   mode=full
