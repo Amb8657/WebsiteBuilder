@@ -1,18 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
 EDITOR="app/src/main/java/com/amb8657/websitebuilder/EnhancedWebsiteBuilderV4Activity.java"
 PERSIST="app/src/main/java/com/amb8657/websitebuilder/Batch4PersistenceActivity.java"
 MANIFEST="app/src/main/AndroidManifest.xml"
 QA=".github/workflows/run-emulator-qa.sh"
 FAIL=0
 PASS=0
-check() {
-  local label="$1"; shift
-  if "$@" >/dev/null 2>&1; then echo "[PASS] $label"; PASS=$((PASS+1)); else echo "[FAIL] $label"; FAIL=$((FAIL+1)); fi
-}
-contains() { grep -Eq "$1" "$2"; }
-
+check(){ local label="$1"; shift; if "$@" >/dev/null 2>&1; then echo "[PASS] $label"; PASS=$((PASS+1)); else echo "[FAIL] $label"; FAIL=$((FAIL+1)); fi; }
+contains(){ grep -Eq "$1" "$2"; }
 check 'Undo implementation' contains 'private void undoAction\(' "$EDITOR"
 check 'Redo implementation' contains 'private void redoAction\(' "$EDITOR"
 check 'Duplicate implementation' contains 'private void duplicate\(' "$EDITOR"
@@ -32,18 +27,14 @@ check 'Control metadata includes name' contains 'name.*name\(b\)' "$EDITOR"
 check 'Canonical builder_v3 export' contains 'builder_v3' "$EDITOR"
 check 'Canonical metadata persistence bridge' contains 'builder_v3' "$PERSIST"
 check 'Persistence bridge restores metadata' contains 'restoreBatch4Metadata' "$PERSIST"
-check 'Launcher is Batch4PersistenceActivity' contains 'Batch4PersistenceActivity' "$MANIFEST"
-check 'QA launches Batch4PersistenceActivity' contains 'Batch4PersistenceActivity' "$QA"
+check 'Current launcher is Batch14FeatureActivity' contains 'Batch14FeatureActivity' "$MANIFEST"
+check 'QA launches Batch14FeatureActivity' contains 'Batch14FeatureActivity' "$QA"
 check 'QA checks fatal crashes' contains 'FATAL EXCEPTION' "$QA"
-
-# Contract checks for mutation/history/persistence wiring. These are deliberately source-level
-# guards: they prevent regressions where a visible control is left disconnected from the model.
 check 'Mutations clear redo through pushUndo' contains 'redo.clear\(\)' "$EDITOR"
 check 'Undo restores document model' contains 'restore\(undo.pop\(\)\)' "$EDITOR"
 check 'Redo restores document model' contains 'restore\(redo.pop\(\)\)' "$EDITOR"
 check 'Save follows mutations' contains 'save\(\);render\(\)' "$EDITOR"
 check 'Layer ordering uses top-level blocks' contains 'x.parent==0' "$EDITOR"
-
 TOTAL=$((PASS+FAIL))
 echo "BATCH4_AUDIT_PASS=$PASS"
 echo "BATCH4_AUDIT_FAIL=$FAIL"
