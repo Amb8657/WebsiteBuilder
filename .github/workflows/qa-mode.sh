@@ -2,12 +2,15 @@
 set -euo pipefail
 cd "${GITHUB_WORKSPACE:-$(pwd)}"
 
-# The cumulative gate is intentionally frozen at the current master-list milestone.
-# Batch 12 is the release gate; do not silently downgrade QA to an earlier batch.
-batch="$(grep -E '^## Current batch under verification:' BUILD_PROGRESS.md | sed -E 's/.*: *([0-9]+).*/\1/' | head -n1 || true)"
-if [[ -z "$batch" || "$batch" -lt 12 ]]; then
-  batch=12
+# Batch 12 is the current verification gate. Never silently verify an older batch.
+batch=12
+if grep -Eq '^## Current batch under verification:' BUILD_PROGRESS.md; then
+  documented="$(grep -E '^## Current batch under verification:' BUILD_PROGRESS.md | sed -E 's/.*: *([0-9]+).*/\1/' | head -n1 || true)"
+  if [[ -n "$documented" && "$documented" -gt "$batch" ]]; then
+    batch="$documented"
+  fi
 fi
+
 if (( batch % 5 == 0 )); then
   mode=full
 else
