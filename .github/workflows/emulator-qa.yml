@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   emulator-qa:
-    # Batch 13 gate: execute the complete cumulative chain before emulator validation.
+    # Batch 14 gate: execute the complete cumulative chain before emulator validation.
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -54,6 +54,8 @@ jobs:
         run: bash "$GITHUB_WORKSPACE/.github/workflows/batch12-feature-audit.sh"
       - name: Run Batch 13 cumulative contract audit
         run: bash "$GITHUB_WORKSPACE/.github/workflows/batch13-feature-audit.sh"
+      - name: Run Batch 14 cumulative contract audit
+        run: bash "$GITHUB_WORKSPACE/.github/workflows/batch14-feature-audit.sh"
       - name: Run app on Android Emulator
         uses: reactivecircus/android-emulator-runner@v2.38.0
         with:
