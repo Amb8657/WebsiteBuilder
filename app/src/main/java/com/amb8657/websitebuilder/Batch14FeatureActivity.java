@@ -2,14 +2,11 @@ package com.amb8657.websitebuilder;
 
 import android.app.AlertDialog;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
-import java.util.Arrays;
 
 /** Batch 14: advanced website elements from the master specification. */
 public class Batch14FeatureActivity extends Batch4PersistenceActivity {
@@ -64,20 +61,4 @@ public class Batch14FeatureActivity extends Batch4PersistenceActivity {
             }
         }).show();
     }
-
-    @Override TextView blockView(Block b,int index) {
-        if(!isAdvanced(b.type))return super.blockView(b,index);
-        String title=advancedTitle(b.type);
-        String display=title+"\n"+b.text;
-        TextView v=tv(display,14,Color.rgb(40,39,45));
-        v.setTypeface(Typeface.DEFAULT);
-        v.setPadding(d(14),d(10),d(14),d(10));
-        v.setBackground(gd(Color.WHITE,10));
-        LinearLayout.LayoutParams p=lp(-1,92);p.setMargins(0,0,0,d(7));v.setLayoutParams(p);
-        v.setOnClickListener(x->editBlock(b));
-        return v;
-    }
-
-    private boolean isAdvanced(String t){return Arrays.asList("Icon","Line","Video","Audio","Map","Social","Card","Testimonial","Pricing","FAQ","Countdown","Table","Gallery","Slider").contains(t);}
-    private String advancedTitle(String t){if("Video".equals(t))return "Video embed";if("Audio".equals(t))return "Audio player";if("Map".equals(t))return "Map";if("Social".equals(t))return "Social link";if("Pricing".equals(t))return "Pricing table";if("FAQ".equals(t))return "FAQ / accordion";if("Slider".equals(t))return "Slider / carousel";return t;}
 }
