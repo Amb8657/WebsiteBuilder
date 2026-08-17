@@ -3,6 +3,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 SRC="$ROOT/app/src/main/java/com/amb8657/websitebuilder"
 B10="$SRC/Batch10FeatureActivity.java"
+B11="$SRC/Batch11FeatureActivity.java"
+B12="$SRC/Batch12FeatureActivity.java"
 LAUNCH="$SRC/Batch4PersistenceActivity.java"
 check(){ local pattern="$1"; local file="$2"; local label="$3"; grep -Fq "$pattern" "$file" || { echo "FAIL: $label"; exit 1; }; echo "PASS: $label"; }
 [[ -f "$B10" ]] || { echo "FAIL: Batch10FeatureActivity.java missing"; exit 1; }
@@ -17,5 +19,7 @@ check "fontUp" "$B10" "Font size increase"
 check "fontDown" "$B10" "Font size decrease"
 check "toggleFill" "$B10" "Solid/outline fill toggle"
 check "resetStyle" "$B10" "Visual style reset"
-check "extends Batch10FeatureActivity" "$LAUNCH" "Canonical launcher includes Batch 10"
-echo "Batch 10 audit: 11/11 checks passed"
+check "extends Batch10FeatureActivity" "$B11" "Batch 11 extends Batch 10"
+check "extends Batch11FeatureActivity" "$B12" "Batch 12 extends Batch 11"
+check "extends Batch12FeatureActivity" "$LAUNCH" "Canonical launcher reaches Batch 12"
+echo "Batch 10 audit: 14/14 checks passed"
