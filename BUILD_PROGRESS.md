@@ -1,6 +1,6 @@
 # Build Progress — Master 10-at-a-time plan
 
-## Current batch under verification: 10
+## Current batch under verification: 13
 
 ## QA policy
 Every batch gets full automated/source-contract regression for all completed batches plus a focused emulator run for the new batch and a critical-path smoke regression for the existing app. Every fifth batch (5, 10, 15, 20, ...) additionally runs the longer emulator lifecycle/persistence regression. A full-project emulator regression remains mandatory before the final APK. GitHub Actions uses concurrency cancellation for the emulator gate so stale queued emulator runs do not compete with the newest commit.
@@ -128,7 +128,43 @@ Implement features in batches of 10. Each batch must be coded and verified befor
 - [x] Solid/outline fill toggle
 - [x] Visual style reset
 
-## Batches 11–20
+## Batch 11 — website structure
+- [x] Add page
+- [x] Rename page
+- [x] Duplicate page
+- [x] Delete page
+- [x] Reorder pages
+- [x] Page background controls
+- [x] Home page control
+- [x] Navigation preview
+- [x] Mobile navigation preview
+- [x] Site structure menu
+
+## Batch 12 — responsive design
+- [x] Desktop preview
+- [x] Tablet preview
+- [x] Mobile preview
+- [x] Breakpoint presets
+- [x] Device-specific visibility
+- [x] Responsive positioning
+- [x] Responsive sizing
+- [x] Responsive typography
+- [x] Responsive sections
+- [x] Responsive settings reset
+
+## Batch 13 — advanced visual editor upgrade
+- [x] Layers/object hierarchy panel
+- [x] Multi-select operations entry point
+- [x] Group selected elements into a real Section container
+- [x] Ungroup selected Section/container
+- [x] Duplicate selected element
+- [x] Copy/paste selected element
+- [x] Lock/unlock with drag enforcement
+- [x] Hide/show selected element
+- [x] Canvas rulers, zoom, pan and snap controls
+- [x] Keyboard shortcuts and contextual element rename
+
+## Batches 14–20
 Each batch will contain exactly 10 additional features selected from the approved Master Specification, implemented and verified sequentially. If the master specification grows beyond 200 features, continue with additional 10-feature batches.
 
 ## Final QA gate
