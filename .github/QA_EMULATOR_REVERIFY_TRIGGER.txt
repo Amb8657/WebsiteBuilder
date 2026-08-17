@@ -1,0 +1,1 @@
+Trigger fresh Android Emulator QA after ADB resilience repair f0f9dd2. No application behavior change.
