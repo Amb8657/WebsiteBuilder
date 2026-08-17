@@ -11,7 +11,9 @@ concurrency:
 
 jobs:
   emulator-qa:
-    runs-on: macos-26-intel
+    # macos-26-intel was failing before a runner was provisioned (runner_id=0,
+    # zero steps). Use the stable Intel macOS runner for the Android emulator QA.
+    runs-on: macos-15-intel
     permissions:
       contents: read
     timeout-minutes: 45
