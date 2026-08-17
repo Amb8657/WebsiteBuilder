@@ -11,6 +11,7 @@ concurrency:
 
 jobs:
   emulator-qa:
+    # Batch 12 gate: execute the complete cumulative chain before emulator validation.
     runs-on: ubuntu-22.04
     permissions:
       contents: read
