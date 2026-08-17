@@ -8,7 +8,7 @@ import org.json.JSONObject;
  * Canonical launcher/persistence layer. All completed feature batches are inherited
  * without replacing the V4 editor engine.
  */
-public class Batch4PersistenceActivity extends Batch12FeatureActivity {
+public class Batch4PersistenceActivity extends Batch13FeatureActivity {
     private static final String DATA = "builder_v3";
     private static final String META = "batch4Meta";
 
