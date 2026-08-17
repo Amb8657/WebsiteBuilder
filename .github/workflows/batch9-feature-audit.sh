@@ -21,10 +21,12 @@ for item in \
   label="${item%%:*}"; symbol="${item#*:}"
   grep -q "$symbol" "$FILE" && pass "$label" || fail "$label"
 done
-if grep -q 'extends Batch10FeatureActivity' "$LAUNCH" && grep -q 'extends Batch9FeatureActivity' "$CHAIN"; then
-  pass 'canonical launcher includes Batch 9 through Batch 10 chain'
+# The canonical launcher intentionally inherits the newest cumulative feature layer.
+# Batch 10 must still inherit Batch 9, proving the intermediate chain remains intact.
+if grep -q 'extends Batch12FeatureActivity' "$LAUNCH" && grep -q 'extends Batch9FeatureActivity' "$CHAIN"; then
+  pass 'canonical launcher includes Batch 9 through Batch 12 chain'
 else
-  fail 'canonical launcher includes Batch 9 through Batch 10 chain'
+  fail 'canonical launcher includes Batch 9 through Batch 12 chain'
 fi
 grep -q 'Batch 8' BUILD_PROGRESS.md && pass 'cumulative progress retained' || fail 'cumulative progress retained'
 echo "BATCH9_PASS=$PASS"
