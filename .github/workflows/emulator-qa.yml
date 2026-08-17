@@ -11,9 +11,6 @@ concurrency:
 
 jobs:
   emulator-qa:
-    # Use the standard GitHub-hosted Linux runner. The previous macOS runner
-    # attempts failed before provisioning (runner_id=0, zero executed steps),
-    # so this keeps QA independent of the unavailable macOS runner pool.
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -21,53 +18,39 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-
       - name: Set up Gradle 8.7
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0 emulator system-images;android-35;google_apis;x86_64'
-
       - name: Select QA mode
         run: bash "$GITHUB_WORKSPACE/.github/workflows/qa-mode.sh"
-
       - name: Run Batch 1-4 cumulative contract audit
         run: bash "$GITHUB_WORKSPACE/.github/workflows/batch4-feature-audit.sh"
-
       - name: Run Batch 5 cumulative contract audit
         run: bash "$GITHUB_WORKSPACE/.github/workflows/batch5-feature-audit.sh"
-
       - name: Run Batch 6 cumulative contract audit
         run: bash "$GITHUB_WORKSPACE/.github/workflows/batch6-feature-audit.sh"
-
       - name: Run Batch 7 cumulative contract audit
         run: bash "$GITHUB_WORKSPACE/.github/workflows/batch7-feature-audit.sh"
-
       - name: Run Batch 8 cumulative contract audit
         run: bash "$GITHUB_WORKSPACE/.github/workflows/batch8-feature-audit.sh"
-
       - name: Run Batch 9 cumulative contract audit
         run: bash "$GITHUB_WORKSPACE/.github/workflows/batch9-feature-audit.sh"
-
       - name: Run Batch 10 cumulative contract audit
         run: bash "$GITHUB_WORKSPACE/.github/workflows/batch10-feature-audit.sh"
-
       - name: Run Batch 11 cumulative contract audit
         run: bash "$GITHUB_WORKSPACE/.github/workflows/batch11-feature-audit.sh"
-
       - name: Run Batch 12 cumulative contract audit
         run: bash "$GITHUB_WORKSPACE/.github/workflows/batch12-feature-audit.sh"
-
       - name: Run app on Android Emulator
         uses: reactivecircus/android-emulator-runner@v2.38.0
         with:
@@ -84,7 +67,6 @@ jobs:
           disable-animations: true
           pre-emulator-launch-script: adb start-server
           script: bash "$GITHUB_WORKSPACE/.github/workflows/run-emulator-wrapper.sh"
-
       - name: Upload emulator evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -97,3 +79,4 @@ jobs:
             activity-dump.txt
             qa-artifacts/**
             app/build/outputs/**
+          if-no-files-found: warn
