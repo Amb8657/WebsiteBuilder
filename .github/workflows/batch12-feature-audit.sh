@@ -16,5 +16,5 @@ check 'Responsive sizing' grep -q 'responsiveSize' "$TARGET"
 check 'Responsive typography' grep -q 'responsiveType' "$TARGET"
 check 'Responsive sections' grep -q 'responsiveSection' "$TARGET"
 check 'Responsive settings reset' grep -q 'resetResponsive' "$TARGET"
-check 'Canonical launcher reaches Batch 12' grep -q 'extends Batch12FeatureActivity' "$LAUNCHER"
+check 'Canonical launcher reaches Batch 13' grep -q 'extends Batch13FeatureActivity' "$LAUNCHER"
 echo "BATCH12_PASS=$PASS"; echo "BATCH12_FAIL=$FAIL"; if (( FAIL != 0 )); then exit 1; fi
