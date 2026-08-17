@@ -20,10 +20,11 @@ check '8dp grid snapping' grep -q 'snapGrid' "$TARGET"
 check 'Bring to front' grep -q 'bringFront' "$TARGET"
 check 'Send to back' grep -q 'sendBack' "$TARGET"
 check 'Canvas zoom reset' grep -q 'resetZoom' "$TARGET"
-# The canonical launcher intentionally remains Batch4PersistenceActivity. Verify that its
-# inheritance chain reaches a later batch layer instead of requiring a direct Batch8 parent.
+# The canonical launcher remains Batch4PersistenceActivity. Its inheritance chain
+# intentionally advances as new batches are added, so verify any completed later
+# batch layer (8+) rather than requiring a specific direct parent.
 check 'Canonical launcher remains Batch4PersistenceActivity' grep -q 'class Batch4PersistenceActivity' "$LAUNCHER"
-check 'Batch4 persistence layer reaches Batch8+' grep -Eq 'extends Batch(8|9|10)FeatureActivity' "$LAUNCHER"
+check 'Batch4 persistence layer reaches Batch8+' grep -Eq 'extends Batch(8|9|10|11)FeatureActivity' "$LAUNCHER"
 echo "BATCH8_PASS=$PASS"
 echo "BATCH8_FAIL=$FAIL"
 if (( FAIL != 0 )); then exit 1; fi
