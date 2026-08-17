@@ -2,8 +2,8 @@
 set -euo pipefail
 cd "${GITHUB_WORKSPACE:-$(pwd)}"
 
-# Batch 13 is the current verification gate. Never silently verify an older batch.
-batch=13
+# Batch 14 is the current verification gate. Never silently verify an older batch.
+batch=14
 if grep -Eq '^## Current batch under verification:' BUILD_PROGRESS.md; then
   documented="$(grep -E '^## Current batch under verification:' BUILD_PROGRESS.md | sed -E 's/.*: *([0-9]+).*/\1/' | head -n1 || true)"
   if [[ -n "$documented" && "$documented" -gt "$batch" ]]; then
@@ -11,7 +11,8 @@ if grep -Eq '^## Current batch under verification:' BUILD_PROGRESS.md; then
   fi
 fi
 
-if (( batch % 5 == 0 )); then
+# Starting with Batch 14, every gate includes the full lifecycle/integration regression.
+if (( batch >= 14 )); then
   mode=full
 else
   mode=fast
