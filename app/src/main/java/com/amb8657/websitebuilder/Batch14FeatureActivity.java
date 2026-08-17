@@ -2,7 +2,7 @@ package com.amb8657.websitebuilder;
 
 import android.app.AlertDialog;
 import android.graphics.Color;
-import android.view.View;
+import android.graphics.Typeface;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,12 +19,12 @@ public class Batch14FeatureActivity extends Batch4PersistenceActivity {
 
     @Override void editor() {
         super.editor();
-        Button advanced = btn("Elements");
-        advanced.setTextColor(CanvaDesignSystem.TEXT);
-        advanced.setBackground(gd(CanvaDesignSystem.PANEL_2,10));
-        advanced.setOnClickListener(v -> elementsMenu());
+        Button elements=btn("Elements");
+        elements.setTextColor(CanvaDesignSystem.TEXT);
+        elements.setBackground(gd(CanvaDesignSystem.PANEL_2,10));
+        elements.setOnClickListener(v->elementsMenu());
         ViewGroup toolbar=(ViewGroup)root.getChildAt(0);
-        toolbar.addView(advanced,new LinearLayout.LayoutParams(d(92),d(44)));
+        toolbar.addView(elements,new LinearLayout.LayoutParams(d(92),d(44)));
     }
 
     private void addAdvanced(String type,String text) {
@@ -43,11 +43,7 @@ public class Batch14FeatureActivity extends Batch4PersistenceActivity {
     }
 
     private void elementsMenu() {
-        String[] items={
-            "Icon","Line","Video embed","Audio embed","Map","Social icon",
-            "Card","Testimonial","Pricing table","FAQ / accordion","Countdown",
-            "Table","Gallery","Slider / carousel"
-        };
+        String[] items={"Icon","Line","Video embed","Audio embed","Map","Social icon","Card","Testimonial","Pricing table","FAQ / accordion","Countdown","Table","Gallery","Slider / carousel"};
         new AlertDialog.Builder(this).setTitle("Advanced elements").setItems(items,(d,w)->{
             switch(w){
                 case 0:addConfigured("Icon","Icon","★");break;
@@ -57,7 +53,7 @@ public class Batch14FeatureActivity extends Batch4PersistenceActivity {
                 case 4:addConfigured("Map","Map location","Nagpur, India");break;
                 case 5:addConfigured("Social","Social handle","Instagram / Maha Architects");break;
                 case 6:addConfigured("Card","Card content","Title\nDescription");break;
-                case 7:addConfigured("Testimonial","Testimonial","“Great design and service.” — Client");break;
+                case 7:addConfigured("Testimonial","Testimonial","Great design and service. — Client");break;
                 case 8:addConfigured("Pricing","Pricing","Basic — ₹0\nPro — ₹999\nBusiness — ₹1999");break;
                 case 9:addConfigured("FAQ","FAQ","Question?\nAnswer shown when opened.");break;
                 case 10:addConfigured("Countdown","Countdown","7 days");break;
@@ -70,19 +66,18 @@ public class Batch14FeatureActivity extends Batch4PersistenceActivity {
     }
 
     @Override TextView blockView(Block b,int index) {
-        if(!isAdvanced(b.type)) return super.blockView(b,index);
-        LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);box.setPadding(d(14),d(10),d(14),d(10));
-        box.setBackground(gd(Color.WHITE,10));
-        TextView title=tv(advancedTitle(b.type),16,Color.rgb(35,34,40));title.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);box.addView(title,new LinearLayout.LayoutParams(-1,d(32)));
-        TextView body=tv(b.text,13,Color.rgb(80,78,88));body.setPadding(0,d(4),0,d(4));box.addView(body,new LinearLayout.LayoutParams(-1,d(50)));
-        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,d(92));p.setMargins(0,0,0,d(7));box.setLayoutParams(p);
-        if("FAQ".equals(b.type)) box.setOnClickListener(v->{body.setVisibility(body.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);});
-        else if("Slider".equals(b.type)) box.setOnClickListener(v->{String[] s=b.text.split("\\n");if(s.length>1){String first=s[0];System.arraycopy(s,1,s,0,s.length-1);s[s.length-1]=first;b.text=String.join("\n",s);save();render();}});
-        else box.setOnClickListener(v->editBlock(b));
-        return wrap(box,p);
+        if(!isAdvanced(b.type))return super.blockView(b,index);
+        String title=advancedTitle(b.type);
+        String display=title+"\n"+b.text;
+        TextView v=tv(display,14,Color.rgb(40,39,45));
+        v.setTypeface(Typeface.DEFAULT);
+        v.setPadding(d(14),d(10),d(14),d(10));
+        v.setBackground(gd(Color.WHITE,10));
+        LinearLayout.LayoutParams p=lp(-1,92);p.setMargins(0,0,0,d(7));v.setLayoutParams(p);
+        v.setOnClickListener(x->editBlock(b));
+        return v;
     }
 
-    private LinearLayout wrap(LinearLayout v,LinearLayout.LayoutParams p){LinearLayout outer=new LinearLayout(this);outer.addView(v,p);return outer;}
     private boolean isAdvanced(String t){return Arrays.asList("Icon","Line","Video","Audio","Map","Social","Card","Testimonial","Pricing","FAQ","Countdown","Table","Gallery","Slider").contains(t);}
     private String advancedTitle(String t){if("Video".equals(t))return "Video embed";if("Audio".equals(t))return "Audio player";if("Map".equals(t))return "Map";if("Social".equals(t))return "Social link";if("Pricing".equals(t))return "Pricing table";if("FAQ".equals(t))return "FAQ / accordion";if("Slider".equals(t))return "Slider / carousel";return t;}
 }
