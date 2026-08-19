@@ -1,0 +1,94 @@
+name: Cumulative B1-B14 Emulator QA
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cumulative-qa:
+    name: Cumulative Batch 1-14 build + emulator QA
+    runs-on: ubuntu-22.04
+    timeout-minutes: 35
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" "emulator" "system-images;android-35;google_apis;x86_64"
+
+      - name: Run all cumulative feature audits present in the repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          audits=(.github/workflows/batch*-feature-audit.sh)
+          test "${#audits[@]}" -gt 0
+          printf 'Found %s feature-audit scripts\n' "${#audits[@]}"
+          for audit in "${audits[@]}"; do
+            echo "===== RUNNING $audit ====="
+            bash "$audit"
+          done
+
+      - name: Build debug APK
+        run: gradle --no-daemon clean assembleDebug --stacktrace
+
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -P 16 4 "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK"
+
+      - name: Start emulator and run cumulative smoke QA
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          force-avd-creation: true
+          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
+          disable-animations: true
+          script: |
+            set -euo pipefail
+            APK="$GITHUB_WORKSPACE/app/build/outputs/apk/debug/app-debug.apk"
+            adb install -r "$APK"
+            adb shell pm clear com.amb8657.websitebuilder >/dev/null || true
+            adb install -r "$APK" >/dev/null
+            adb shell monkey -p com.amb8657.websitebuilder 1 >/dev/null
+            sleep 5
+            adb shell dumpsys activity activities | grep -F 'com.amb8657.websitebuilder/.Batch14FeatureActivity'
+            adb shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp' | grep -F 'com.amb8657.websitebuilder'
+            mkdir -p "$GITHUB_WORKSPACE/qa-artifacts"
+            adb exec-out screencap -p > "$GITHUB_WORKSPACE/qa-artifacts/b1-b14-launcher.png"
+            adb shell am force-stop com.amb8657.websitebuilder
+            adb shell monkey -p com.amb8657.websitebuilder 1 >/dev/null
+            sleep 2
+            adb shell dumpsys package com.amb8657.websitebuilder | grep -F 'versionName'
+            echo 'CUMULATIVE B1-B14 EMULATOR QA: PASS'
+
+      - name: Upload emulator evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cumulative-b1-b14-emulator-qa-evidence
+          path: qa-artifacts/
+          if-no-files-found: warn
