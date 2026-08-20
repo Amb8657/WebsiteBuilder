@@ -1,6 +1,6 @@
 # Build Progress — Master 10-at-a-time plan
 
-## Current batch under verification: 13
+## Current batch under verification: 15
 
 ## QA policy
 Every batch gets full automated/source-contract regression for all completed batches plus a focused emulator run for the new batch and a critical-path smoke regression for the existing app. Every fifth batch (5, 10, 15, 20, ...) additionally runs the longer emulator lifecycle/persistence regression. A full-project emulator regression remains mandatory before the final APK. GitHub Actions uses concurrency cancellation for the emulator gate so stale queued emulator runs do not compete with the newest commit.
@@ -128,7 +128,7 @@ Implement features in batches of 10. Each batch must be coded and verified befor
 - [x] Solid/outline fill toggle
 - [x] Visual style reset
 
-## Batch 11 — website structure
+## Batch 11 — website structure foundation
 - [x] Add page
 - [x] Rename page
 - [x] Duplicate page
@@ -164,7 +164,33 @@ Implement features in batches of 10. Each batch must be coded and verified befor
 - [x] Canvas rulers, zoom, pan and snap controls
 - [x] Keyboard shortcuts and contextual element rename
 
-## Batches 14–20
+## Batch 14 — advanced editable elements — verified
+- [x] Icon element
+- [x] Line element
+- [x] Video embed element
+- [x] Audio embed element
+- [x] Map element
+- [x] Social icon element
+- [x] Card element
+- [x] Testimonial element
+- [x] Pricing table element
+- [x] FAQ / accordion element
+
+Additional Batch 14 advanced elements implemented in the same editor chain: Countdown, Table, Gallery, Slider / carousel.
+
+## Batch 15 — website structure expansion — under verification
+- [x] Page URL / slug
+- [x] Parent/child page hierarchy
+- [x] Site hierarchy browser
+- [x] Dropdown navigation block
+- [x] Mobile menu block
+- [x] Reusable header
+- [x] Reusable footer
+- [x] Shared header/footer synchronization
+- [x] Custom 404 page designation
+- [x] Website structure summary
+
+## Batches 16–20
 Each batch will contain exactly 10 additional features selected from the approved Master Specification, implemented and verified sequentially. If the master specification grows beyond 200 features, continue with additional 10-feature batches.
 
 ## Final QA gate
