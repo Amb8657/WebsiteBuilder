@@ -3,7 +3,7 @@ set -uo pipefail
 cd "${GITHUB_WORKSPACE:-$(pwd)}"
 
 PACKAGE="com.amb8657.websitebuilder"
-ACTIVITY="${PACKAGE}/.Batch14FeatureActivity"
+ACTIVITY="${PACKAGE}/.Batch15FeatureActivity"
 RESULT=0
 FAILURES=()
 PASS_COUNT=0
@@ -28,12 +28,12 @@ boot=''; for i in $(seq 1 90); do if wait_for_adb; then boot="$(adb shell getpro
 
 adb_retry adb logcat -c >/dev/null 2>&1 || true
 adb_retry adb shell am force-stop "$PACKAGE" >/dev/null 2>&1 || true
-adb_retry adb shell am start -n "$ACTIVITY" > qa-artifacts/launch.log 2>&1 && pass 'Batch14 activity launch command' || fail 'Batch14 activity launch command'
+adb_retry adb shell am start -n "$ACTIVITY" > qa-artifacts/launch.log 2>&1 && pass 'Batch15 activity launch command' || fail 'Batch15 activity launch command'
 
 process_ok=0; for i in $(seq 1 30); do adb_retry adb shell pidof "$PACKAGE" >/dev/null 2>&1 && { process_ok=1; break; }; sleep 2; done
 [[ "$process_ok" == "1" ]] && pass 'WebsiteBuilder process alive' || fail 'WebsiteBuilder process alive'
 activity_ok=0; for i in $(seq 1 30); do wait_for_adb || true; adb shell dumpsys activity activities > qa-artifacts/activity-dump-live.txt 2>&1 || true; grep -q "$ACTIVITY" qa-artifacts/activity-dump-live.txt && { activity_ok=1; break; }; sleep 2; done
-[[ "$activity_ok" == "1" ]] && pass 'Batch14 activity foreground' || fail 'Batch14 activity foreground'
+[[ "$activity_ok" == "1" ]] && pass 'Batch15 activity foreground' || fail 'Batch15 activity foreground'
 
 wait_for_adb || true
 adb logcat -d -v threadtime > qa-artifacts/logcat.txt 2>&1 || true
@@ -46,7 +46,7 @@ adb exec-out screencap -p > qa-artifacts/emulator-final.png 2>/dev/null || true
 [[ -s qa-artifacts/emulator-final.png ]] && pass 'Emulator screenshot captured' || fail 'Emulator screenshot captured'
 [[ -s qa-artifacts/v4-window.xml ]] && pass 'UI hierarchy captured' || fail 'UI hierarchy captured'
 if grep -qE 'FATAL EXCEPTION|Process: com\.amb8657\.websitebuilder' qa-artifacts/logcat.txt 2>/dev/null; then fail 'No WebsiteBuilder fatal crash'; else pass 'No WebsiteBuilder fatal crash'; fi
-if grep -q "$ACTIVITY" qa-artifacts/activity-dump.txt 2>/dev/null; then pass 'Batch14 activity remains active'; else fail 'Batch14 activity remains active'; fi
+if grep -q "$ACTIVITY" qa-artifacts/activity-dump.txt 2>/dev/null; then pass 'Batch15 activity remains active'; else fail 'Batch15 activity remains active'; fi
 if wait_for_adb && adb shell pidof "$PACKAGE" >/dev/null 2>&1; then pass 'Process remains alive at final check'; else fail 'Process remains alive at final check'; fi
 
 { echo 'WebsiteBuilder emulator QA summary'; echo "PACKAGE=$PACKAGE"; echo "ACTIVITY=$ACTIVITY"; echo "PASS_COUNT=$PASS_COUNT"; echo "FAIL_COUNT=${#FAILURES[@]}"; if ((${#FAILURES[@]})); then echo 'FAILURES:'; printf '%s\n' "${FAILURES[@]}"; else echo 'FAILURES: none'; fi; } | tee qa-artifacts/qa-summary.txt
