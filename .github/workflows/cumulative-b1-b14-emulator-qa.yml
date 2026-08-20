@@ -1,11 +1,11 @@
-name: Cumulative B1-B14 Emulator QA
+name: Cumulative B1-B15 Emulator QA
 
 on:
   workflow_dispatch:
 
 jobs:
   cumulative-qa:
-    name: Cumulative Batch 1-14 build + emulator QA
+    name: Cumulative Batch 1-15 build + emulator QA
     runs-on: ubuntu-22.04
     timeout-minutes: 35
     permissions:
@@ -75,20 +75,20 @@ jobs:
             adb install -r "$APK" >/dev/null
             adb shell monkey -p com.amb8657.websitebuilder 1 >/dev/null
             sleep 5
-            adb shell dumpsys activity activities | grep -F 'com.amb8657.websitebuilder/.Batch14FeatureActivity'
+            adb shell dumpsys activity activities | grep -F 'com.amb8657.websitebuilder/.Batch15FeatureActivity'
             adb shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp' | grep -F 'com.amb8657.websitebuilder'
             mkdir -p "$GITHUB_WORKSPACE/qa-artifacts"
-            adb exec-out screencap -p > "$GITHUB_WORKSPACE/qa-artifacts/b1-b14-launcher.png"
+            adb exec-out screencap -p > "$GITHUB_WORKSPACE/qa-artifacts/b1-b15-launcher.png"
             adb shell am force-stop com.amb8657.websitebuilder
             adb shell monkey -p com.amb8657.websitebuilder 1 >/dev/null
             sleep 2
             adb shell dumpsys package com.amb8657.websitebuilder | grep -F 'versionName'
-            echo 'CUMULATIVE B1-B14 EMULATOR QA: PASS'
+            echo 'CUMULATIVE B1-B15 EMULATOR QA: PASS'
 
       - name: Upload emulator evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cumulative-b1-b14-emulator-qa-evidence
+          name: cumulative-b1-b15-emulator-qa-evidence
           path: qa-artifacts/
           if-no-files-found: warn
