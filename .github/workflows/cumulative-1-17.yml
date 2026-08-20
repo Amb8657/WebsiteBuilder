@@ -1,0 +1,140 @@
+name: Cumulative 1-17 Gate
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: cumulative-1-17-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cumulative-static-build:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK
+        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Run every available batch audit cumulatively
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          audits=(.github/workflows/batch*-feature-audit.sh)
+          test "${#audits[@]}" -gt 0
+          for audit in "${audits[@]}"; do
+            echo "===== AUDIT: $audit ====="
+            bash "$audit"
+          done
+
+      - name: Verify cumulative Batch 1-17 launcher chain
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'Batch17FeatureActivity' app/src/main/AndroidManifest.xml
+          grep -q 'extends Batch16FeatureActivity' app/src/main/java/com/amb8657/websitebuilder/Batch17FeatureActivity.java
+          grep -q 'extends Batch15FeatureActivity' app/src/main/java/com/amb8657/websitebuilder/Batch16FeatureActivity.java
+          grep -q 'extends Batch14FeatureActivity' app/src/main/java/com/amb8657/websitebuilder/Batch15FeatureActivity.java
+          for n in 1 2 3 4 5 6 7 8 9 10 11 12 13 14; do
+            test -n "$(find app/src/main/java -name "Batch${n}*Activity.java" -print -quit)"
+          done
+
+      - name: Verify Batch 16 and 17 ten-feature contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in title description keywords favicon language canonical robots og_title og_description custom_css; do grep -q "\"$key\"" app/src/main/java/com/amb8657/websitebuilder/Batch16FeatureActivity.java; done
+          for key in name submit success required email name_field message_field validation storage confirmation; do grep -q "\"$key\"" app/src/main/java/com/amb8657/websitebuilder/Batch17FeatureActivity.java; done
+
+      - name: Build debug APK
+        run: gradle --no-daemon clean assembleDebug --stacktrace
+
+      - name: Verify APK
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -P 16 4 "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK"
+          sha256sum "$APK"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: WebsiteBuilder-cumulative-1-17-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+  emulator-smoke:
+    needs: cumulative-static-build
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK and emulator image
+        run: |
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" "emulator" "system-images;android-35;google_apis;x86_64"
+          echo "no" | avdmanager create avd -n cumulative17 -k "system-images;android-35;google_apis;x86_64" --force
+
+      - name: Build APK
+        run: gradle --no-daemon assembleDebug --stacktrace
+
+      - name: Launch emulator and smoke test app
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          script: |
+            adb install -r app/build/outputs/apk/debug/app-debug.apk
+            adb shell am force-stop com.amb8657.websitebuilder
+            adb shell monkey -p com.amb8657.websitebuilder 1
+            sleep 8
+            adb shell pidof com.amb8657.websitebuilder
+            adb shell dumpsys activity activities | grep -q 'Batch17FeatureActivity'
+            adb exec-out screencap -p > cumulative-1-17.png
+
+      - name: Upload emulator evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: WebsiteBuilder-cumulative-1-17-emulator-evidence
+          path: cumulative-1-17.png
+          if-no-files-found: error
